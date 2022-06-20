@@ -3,7 +3,7 @@ clear all
 matRad_rc;
 pathStructureSet = "~/thindrives/Brachy18_02/Pat4/MFJ_1-Scan+plan/SS001.dcm"; 
 pathImg = "~/thindrives/Brachy18_02/Pat4/MFJ_1-Scan+plan/MR001.dcm";
-[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+[cst, ct] = matRad_importDicomDummyStructureSet(pathStructureSet,pathImg);
 
 %% I - set dose objectives for brachytherapy
 
@@ -11,18 +11,18 @@ pathImg = "~/thindrives/Brachy18_02/Pat4/MFJ_1-Scan+plan/MR001.dcm";
 
 % Prostate bed objective
 cst{1,3} = 'TARGET';
-cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(100,15));
-cst{1,6}{2} = struct(DoseObjectives.matRad_SquaredOverdosing(100,17.5));
+cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(1,140));
+% cst{1,6}{2} = struct(DoseObjectives.matRad_SquaredOverdosing(100,17.5));
 cst{1,5}.Priority = 1;
 
 % Rectum Objective
 cst{3,3}    =  'OAR';
-cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,7.5));
+cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(1,120));
 cst{3,5}.Priority = 2;
 
 % Urethra Objective
 cst{2,3}    =  'OAR';
-cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,7.5));
+cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(1,120));
 cst{2,5}.Priority = 3;
 
 
@@ -30,7 +30,7 @@ cst{2,5}.Priority = 3;
 
 % II.1 Treatment Plan
 pln.radiationMode   = 'brachy'; 
-pln.machine         = 'HDR';    % 'LDR' or 'HDR' for brachy
+pln.machine         = 'LDR';    % 'LDR' or 'HDR' for brachy
 
 % II.2 - needle and template geometry
 pln.propStf.needle.seedDistance      = 10; % [mm] 
@@ -48,11 +48,11 @@ pln.propStf.template.activeNeedles = [0 0 0 0 0 0 0 0 0 0 0 0 0;... % 7.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 6.5
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 6.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 5.5
-                                      0 0 0 0 0 1 1 1 0 0 0 0 0;... % 5.0
-                                      0 0 0 0 1 0 0 0 1 0 0 0 0;... % 4.5
-                                      0 0 0 1 0 1 0 1 0 1 0 0 0;... % 4.0
-                                      0 0 0 0 1 0 0 0 1 0 0 0 0;... % 3.5
-                                      0 0 0 0 0 1 0 1 0 0 0 0 0;... % 3.0
+                                      0 0 0 0 1 1 1 1 1 0 0 0 0;... % 5.0
+                                      0 0 0 1 1 1 1 1 1 1 0 0 0;... % 4.5
+                                      0 0 0 1 1 1 1 1 1 1 0 0 0;... % 4.0
+                                      0 0 0 1 1 1 1 1 1 1 0 0 0;... % 3.5
+                                      0 0 0 0 1 1 1 1 1 0 0 0 0;... % 3.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 2.5
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 2.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 1.5
@@ -62,17 +62,17 @@ pln.propStf.template.activeNeedles = [0 0 0 0 0 0 0 0 0 0 0 0 0;... % 7.0
 pln.propStf.isoCenter    = matRad_getIsoCenter(cst,ct,0); %  target center
 
 % II.4 - dose calculation options
-pln.propDoseCalc.TG43approximation = '2D'; %'1D' for LDR or '2D' for HDR 
+pln.propDoseCalc.TG43approximation = '1D'; %'1D' for LDR or '2D' for HDR 
 
-pln.propDoseCalc.doseGrid.resolution.x = 2; % [mm]
-pln.propDoseCalc.doseGrid.resolution.y = 2; % [mm]
+pln.propDoseCalc.doseGrid.resolution.x = 1; % [mm]
+pln.propDoseCalc.doseGrid.resolution.y = 1; % [mm]
 pln.propDoseCalc.doseGrid.resolution.z = 5; % [mm]
 
 pln.propDoseCalc.DistanceCutoff    = 130; % [mm] sets the maximum distance
                                           % to which dose is calculated. 
 
-% the standard interior point optimizer IPOPT can be used
-pln.propOpt.optimizer       = 'IPOPT';
+% the optimizer SA is used
+pln.propOpt.optimizer       = 'SA';
 
 % II.5 - book keeping
 pln.propOpt.bioOptimization = 'none';
