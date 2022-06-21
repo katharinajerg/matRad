@@ -12,17 +12,16 @@ pathImg = "~/thindrives/Brachy18_02/Pat4/MFJ_1-Scan+plan/MR001.dcm";
 % Prostate bed objective
 cst{1,3} = 'TARGET';
 cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(1,140));
-% cst{1,6}{2} = struct(DoseObjectives.matRad_SquaredOverdosing(100,17.5));
 cst{1,5}.Priority = 1;
 
 % Rectum Objective
 cst{3,3}    =  'OAR';
-cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(1,120));
+cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,20));
 cst{3,5}.Priority = 2;
 
 % Urethra Objective
 cst{2,3}    =  'OAR';
-cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(1,120));
+cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,20));
 cst{2,5}.Priority = 3;
 
 
@@ -33,8 +32,8 @@ pln.radiationMode   = 'brachy';
 pln.machine         = 'LDR';    % 'LDR' or 'HDR' for brachy
 
 % II.2 - needle and template geometry
-pln.propStf.needle.seedDistance      = 10; % [mm] 
-pln.propStf.needle.seedsNo           = 6; 
+pln.propStf.needle.seedDistance      = 5; % [mm] 
+pln.propStf.needle.seedsNo           = 5; 
 
 % II.3 - template position
 pln.propStf.template.normal      = [0,0,1];
@@ -49,9 +48,9 @@ pln.propStf.template.activeNeedles = [0 0 0 0 0 0 0 0 0 0 0 0 0;... % 7.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 6.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 5.5
                                       0 0 0 0 1 1 1 1 1 0 0 0 0;... % 5.0
-                                      0 0 0 1 1 1 1 1 1 1 0 0 0;... % 4.5
-                                      0 0 0 1 1 1 1 1 1 1 0 0 0;... % 4.0
-                                      0 0 0 1 1 1 1 1 1 1 0 0 0;... % 3.5
+                                      0 0 1 1 1 1 1 1 1 1 1 0 0;... % 4.5
+                                      0 0 1 1 1 1 1 1 1 1 1 0 0;... % 4.0
+                                      0 0 1 1 1 1 1 1 1 1 1 0 0;... % 3.5
                                       0 0 0 0 1 1 1 1 1 0 0 0 0;... % 3.0
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 2.5
                                       0 0 0 0 0 0 0 0 0 0 0 0 0;... % 2.0
@@ -64,8 +63,8 @@ pln.propStf.isoCenter    = matRad_getIsoCenter(cst,ct,0); %  target center
 % II.4 - dose calculation options
 pln.propDoseCalc.TG43approximation = '1D'; %'1D' for LDR or '2D' for HDR 
 
-pln.propDoseCalc.doseGrid.resolution.x = 1; % [mm]
-pln.propDoseCalc.doseGrid.resolution.y = 1; % [mm]
+pln.propDoseCalc.doseGrid.resolution.x = 2.5; % [mm]
+pln.propDoseCalc.doseGrid.resolution.y = 2.5; % [mm]
 pln.propDoseCalc.doseGrid.resolution.z = 5; % [mm]
 
 pln.propDoseCalc.DistanceCutoff    = 130; % [mm] sets the maximum distance

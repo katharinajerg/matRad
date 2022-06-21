@@ -64,7 +64,7 @@ classdef matRad_OptimizerSA < matRad_Optimizer
                        
 
             % define number of seeds
-            noSeeds = 30;%numel(w0);
+            noSeeds = 60;%numel(w0);
 
             % set Callback
             qCallbackSet = false;

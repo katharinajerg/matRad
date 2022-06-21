@@ -11,7 +11,7 @@ end
 
 if isempty(options)
     options.tolFun          = 1e-3;
-    options.maxIter         = 1e5;
+    options.maxIter         = 1e4;
     options.stallIterLimit  = 50;
     options.timeLimit       = 600;
     

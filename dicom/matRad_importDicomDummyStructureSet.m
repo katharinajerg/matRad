@@ -1,11 +1,11 @@
-function [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath)
-% matRad_importDicomUSStructureSet is a matRad function to import 
-% a predefined set of dicom files of an ultra sound with predefined contour
+function [cst, ct] = matRad_importDicomDummyStructureSet(structureSetPath, imgPath)
+% matRad_importDicomDummyStructureSet is a matRad function to create 
+% a predefined set of dicom files of an ultra sound with rectangular contour
 % data into matRad's native data formats
 % 
 % call
-% [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath)  
-% [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath)
+% [cst, ct] = matRad_importDicomDummyStructureSet(structureSetPath, imgPath)  
+% [cst, ct] = matRad_importDicomDummyStructureSet(structureSetPath, imgPath)
 %
 % input
 %   structureSetPath: file to be imported which contains the structure set
@@ -39,6 +39,34 @@ end
 info = dicominfo(structureSetPath);
 imgInfo = dicominfo(imgPath); % US image contains information about the image geometry, which is not contained in the structure set
 contour = dicomContours(info);
+testTarget = [-15, -45, -10; 10, -45, -10; 10, -20, -10; -15, -20, -10; -15,-45,-10;
+              -15, -45, -15; 10, -45, -15; 10, -20, -15; -15, -20, -15; -15,-45,-15;
+              -15, -45, -20; 10, -45, -20; 10, -20, -20; -15, -20, -20; -15,-45,-20; 
+              -15, -45, -25; 10, -45, -25; 10, -20, -25; -15, -20, -25; -15,-45,-25;
+              -15, -45, -30; 10, -45, -30; 10, -20, -30; -15, -20, -30; -15,-45,-30;];
+testTarget = mat2cell(testTarget, [5 5 5 5 5]);
+
+testOAR1     = [10, -45, -10; 20, -45, -10; 20, -20, -10; 10, -20, -10; 10,-45,-10;
+                10, -45, -15; 20, -45, -15; 20, -20, -15; 10, -20, -15; 10,-45,-15;
+                10, -45, -20; 20, -45, -20; 20, -20, -20; 10, -20, -20; 10,-45,-20; 
+                10, -45, -25; 20, -45, -25; 20, -20, -25; 10, -20, -25; 10,-45,-25;
+                10, -45, -30; 20, -45, -30; 20, -20, -30; 10, -20, -30; 10,-45,-30;];
+testOAR1 = mat2cell(testOAR1, [5 5 5 5 5]);
+
+testOAR2     = [-25, -45, -10; -15, -45, -10; -15, -20, -10; -25, -20, -10; -25, -45, -10;
+                -25, -45, -15; -15, -45, -15; -15, -20, -15; -25, -20, -15; -25, -45, -15;
+                -25, -45, -20; -15, -45, -20; -15, -20, -20; -25, -20, -20; -25, -45, -20; 
+                -25, -45, -25; -15, -45, -25; -15, -20, -25; -25, -20, -25; -25, -45, -25; 
+                -25, -45, -30; -15, -45, -30; -15, -20, -30; -25, -20, -30; -25, -45, -30;];
+testOAR2= mat2cell(testOAR2, [5 5 5 5 5]);
+
+contour= deleteContour(contour,0);
+contour= deleteContour(contour,1);
+contour= deleteContour(contour,2);
+contour= addContour(contour,0,'TestTarget',testTarget,'CLOSED_PLANAR',[255;0;0]);
+contour= addContour(contour,1,'TestOAR1',testOAR1,'CLOSED_PLANAR',[0;150;0]);
+contour= addContour(contour,2,'TestOAR2',testOAR2,'CLOSED_PLANAR',[0;150;0]);
+
 imgInfo.ImagePositionPatient(3) = contour.ROIs.ContourData{1,1}{end,1}(1,3); % set patient position to last slice, because the original US has more slices
 
 figure
@@ -67,7 +95,8 @@ for i = 1:size(roiName)
     cst(i,1) = {i-1};
     mask = createMask(contour,char(roiName(i)),referenceInfo);
     mk = mk + mask;
-    % generate the indices using the 'find' function 
+    % generate the indices using the 'find' function which has in-built 
+    % ind2sub function
     temp = find(mask);
     cst{i,4}{1,1} = temp;
     cst{i,5} = struct('Priority',0,'Visible',1,'visibleColor', ...
