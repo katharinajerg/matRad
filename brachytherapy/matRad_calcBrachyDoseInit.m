@@ -59,8 +59,8 @@ switch pln.radiationMode
         dij.beamNum             = 1;
         dij.numOfNeedles        = stf.numOfNeedles;
         dij.numOfSeedsPerNeedle = stf.numOfSeedsPerNeedle;
-        dij.totalNumOfSeeds     = dij.numOfNeedles*dij.numOfSeedsPerNeedle;
-        dij.totalNumOfBixels    = dij.totalNumOfSeeds;
+        dij.totalNumOfSeeds     = stf.totalNumOfBixels;
+        dij.totalNumOfBixels    = stf.totalNumOfBixels;
         
 end
 

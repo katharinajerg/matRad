@@ -11,15 +11,17 @@ end
 
 if isempty(options)
     options.tolFun          = 1e-3;
-    options.maxIter         = 1e4;
+    options.maxIter         = 0;
     options.stallIterLimit  = 50;
     options.timeLimit       = 600;
     
-    options.additionalSeeds = 0.1;
-    options.additionalPositions = 0.1;
+    options.additionalSeeds = 0;
+    options.additionalPositions = 0;
     options.maxTempIter = 500;
     options.linearParamTemperature = 10;
     options.speedParam = 0.6;
+
+    options.importDefaultSeedPos = 1; %1 for seed position import. When importing seeds options.additialSeeds/Pos must be 0
 end
 
 if options.additionalSeeds<=1
@@ -35,7 +37,7 @@ else
     totPositions = noPositions+length(x0);
 end
 
-supp     = getSpacedSeedConfiguration(totPositions,totSeeds);
+supp     = getSpacedSeedConfiguration(totPositions,totSeeds, options);
 tempSupp = supp(1:noPositions);
 fVal     = fHandle(tempSupp);
 
@@ -51,7 +53,7 @@ end
 initTemp = options.linearParamTemperature*initTemp/options.maxTempIter;
 
 %% initialization of mandatory variables for SA
-supp     = getSpacedSeedConfiguration(totPositions,totSeeds);
+supp     = getSpacedSeedConfiguration(totPositions,totSeeds, options);
 tempSupp = supp(1:noPositions);
 fVal     = fHandle(tempSupp);
 
@@ -137,11 +139,17 @@ output.exitflag    = exitflag;
 end
 
 
-function supp = getSpacedSeedConfiguration(totPositions,totSeeds)
-    distSeed = floor(totPositions/(totSeeds+2));
-    ind = distSeed:distSeed:totSeeds*distSeed;
-    supp = zeros(totPositions,1);
-    supp(ind) = 1;
+function supp = getSpacedSeedConfiguration(totPositions,totSeeds, options)
+
+    if options.importDefaultSeedPos
+        load('supp.mat', 'supp');
+        supp = double(supp);
+    else
+        distSeed = floor(totPositions/(totSeeds+2));
+        ind = distSeed:distSeed:totSeeds*distSeed;
+        supp = zeros(totPositions,1);
+        supp(ind) = 1;
+    end
 end
 
 
