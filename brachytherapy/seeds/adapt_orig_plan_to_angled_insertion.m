@@ -140,6 +140,7 @@ for i = 1:numel(full_needles)
     full_needles{i}.points = points;
     full_needles{i}.number_of_seeds = size(points, 1);
 end
+full_needles_orig = full_needles;
 
 
 % calculate new needle direction and corrected seed positions for both
@@ -202,8 +203,23 @@ for n = 1 : numel(needles)
         full_tplan{ind,3}(3,1) = full_needles{n}.needle_direction(3);
     end
 end
+full_tplan_orig = cell(1,3);
+ind = 0;
+for n = 1 : numel(needles)
+    for s = 1:full_needles{n}.number_of_seeds
+        ind = ind + 1;
+        full_tplan_orig{ind,1}(1) = ind;
+        full_tplan_orig{ind,2}(1,1) = full_needles_orig{n}.points(s,1);
+        full_tplan_orig{ind,2}(2,1) = full_needles_orig{n}.points(s,2);
+        full_tplan_orig{ind,2}(3,1) = full_needles_orig{n}.points(s,3);
+        full_tplan_orig{ind,3}(1,1) = full_needles_orig{n}.needle_direction(1);
+        full_tplan_orig{ind,3}(2,1) = full_needles_orig{n}.needle_direction(2);
+        full_tplan_orig{ind,3}(3,1) = full_needles_orig{n}.needle_direction(3);
+    end
+end
 save("tplan.mat", "moved_tplan")
 save("tplan_full.mat", "full_tplan")
+save("tplan_full_orig.mat", "full_tplan_orig")
 save("tplan_orig.mat", "tplan")
 
 % determine bool vector with 1 for each seed in full_tplan with is occupied

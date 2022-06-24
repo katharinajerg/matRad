@@ -1,0 +1,19 @@
+function [xWorldLimits, yWorldLimits] = xyWorldLimits(imsize, info)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+    pixel_spacing = info.PixelSpacing;
+    image_position = info.ImagePositionPatient;
+    image_orientation = info.ImageOrientationPatient;
+    
+    xWorldLimits = [image_position(1) - 0.5*pixel_spacing(1), ... 
+                    image_orientation(1)*pixel_spacing(1)*imsize(2) + ...
+                    image_orientation(4)*pixel_spacing(2)*imsize(1) + ...
+                    image_position(1) - 0.5*pixel_spacing(1)];
+    yWorldLimits = [image_position(2) - 0.5*pixel_spacing(2), ... 
+                    image_orientation(2)*pixel_spacing(1)*imsize(2) + ...
+                    image_orientation(5)*pixel_spacing(2)*imsize(1) + ...
+                    image_position(2) - 0.5*pixel_spacing(2)];
+
+end
+

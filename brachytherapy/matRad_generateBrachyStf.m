@@ -153,7 +153,9 @@ if (~isfield(pln.propStf, 'importSeedPos')| ~pln.propStf.importSeedPos)
 
 else % if import is true
 
-    load 'tplan_full.mat' full_tplan
+    input = load('tplan_full_orig.mat', 'full_tplan_orig');
+    full_tplan = input.full_tplan_orig;
+    
     x = zeros(1,size(full_tplan,1));
     y = zeros(1,size(full_tplan,1));
     z = zeros(1,size(full_tplan,1));

@@ -97,12 +97,16 @@ disp(stf)
 
 % II.9 - Dose Calculation
 dij = matRad_calcBrachyDose(ct,stf,pln,cst);
+save("dij.mat", "dij")
+
 
 
 %% III - Inverse Optimization for brachy therapy
 
 resultGUI = matRad_fluenceOptimization(dij,cst,pln);
+save("result.mat", "resultGUI")
 matRadGUI;
+
 
 %% IV - Calculate and plot the results
 
