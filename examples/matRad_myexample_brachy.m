@@ -16,12 +16,12 @@ cst{1,5}.Priority = 3;
 
 % Rectum Objective
 cst{3,3}    =  'OAR';
-cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,20));
+cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,120));
 cst{3,5}.Priority = 1;
 
 % Urethra Objective
 cst{2,3}    =  'OAR';
-cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,20));
+cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,120));
 cst{2,5}.Priority = 2;
 
 
