@@ -108,6 +108,14 @@ try
 catch
    matRad_cfg.dispError('Could not find the following machine file: %s\n',fileName); 
 end
+
+% adapt machine file with current DICOM plan
+try
+   info_pl = dicominfo(fullfile(matRad_cfg.matRadRoot,'basedata','PL001.dcm'));
+   machine.data.SourceStrengthImplanted = info_pl.SourceSequence.Item_1.ReferenceAirKermaRate;
+catch
+   matRad_cfg.dispError('Could not find a planning file to update the machine information. Default machine is used.\n'); 
+end
 dij.basedata = machine;
 % compute SSDs
 % stf = matRad_computeSSD(stf,ct); 

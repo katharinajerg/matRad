@@ -37,9 +37,9 @@ pln.propStf.needle.seedDistance     = 5; % [mm]
 pln.propStf.needle.seedsNo          = 5; 
 
 % II.3 - template position
-pln.propStf.template.normal      = [0,0,1];
-pln.propStf.bixelWidth   = 5; % [mm] template grid distance
-pln.propStf.templateRoot = matRad_getTemplateRoot(ct,cst); 
+pln.propStf.template.normal = [0,0,1];
+pln.propStf.bixelWidth      = 5; % [mm] template grid distance
+pln.propStf.templateRoot    = matRad_getTemplateRoot(ct,cst); 
 % mass center of target in x and y and bottom in z
 
 % Here, we define active needles as 1 and inactive needles
@@ -100,11 +100,11 @@ dij = matRad_calcBrachyDose(ct,stf,pln,cst);
 save("dij.mat", "dij")
 
 
-
 %% III - Inverse Optimization for brachy therapy
 
 resultGUI = matRad_fluenceOptimization(dij,cst,pln);
 save("result.mat", "resultGUI")
+save("ct.mat", "ct")
 matRadGUI;
 
 

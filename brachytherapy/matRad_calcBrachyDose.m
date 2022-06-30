@@ -110,7 +110,14 @@ switch pln.propDoseCalc.TG43approximation
 end
 matRad_cfg.dispInfo('done in %f s!\n',toc(tmpTimer));
 
-dij.physicalDose = {DoseRate};
+if (strcmp(pln.machine,'LDR'))
+    % convert DoseRate in cGy per hour to Gy
+    % integration over time from 0 -> inf yields
+    dose = DoseRate*0.01*machine.data.SourceIsotopeHalfLife*24/0.693147; % /ln(2)
+    dij.physicalDose = {dose}; % dose in Gy
+else 
+    dij.phsicalDose = {DoseRate}; % dose rate in cGy per hours
+end
 
 % update waitbar, delete waitbar
 waitbar(1);
