@@ -50,7 +50,7 @@ if ~exist('refGy', 'var')
     refGy = [];
 end
 
-dvh = matRad_calcDVH(cst,doseCube,'cum');
+dvh = matRad_calcDVH(cst,doseCube,'cum', linspace(0,400,1000));
 qi  = matRad_calcQualityIndicators(cst,pln,doseCube,refGy,refVol);
 
 figure,set(gcf,'Color',[1 1 1]);

@@ -16,7 +16,7 @@ function [ThetaMatrix,ThetaVector] = matRad_getThetaMatrix(templateNormal,Distan
 % output
 %   angle matrix:       rows: index of dosepoint 
 %                       columns: index of deedpoint
-%                       entry: polar angles betreen seedpoints and  
+%                       entry: polar angles between seedpoints and  
 %                       dosepoint in degrees
 %   angle vector:       column vector of angle matrix entries
 %

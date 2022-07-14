@@ -2,7 +2,7 @@ clear all
 close all
 
 % Pat4
-path = '~/Daten/';
+path = '~/Daten/Pat1/';
 D = '~/thindrives/Brachy18_02/dicom-dict-iotp.txt';
 info_pl = dicominfo([path,'PL001.dcm'],'dictionary',D);
 
@@ -221,6 +221,9 @@ save("tplan.mat", "moved_tplan")
 save("tplan_full.mat", "full_tplan")
 save("tplan_full_orig.mat", "full_tplan_orig")
 save("tplan_orig.mat", "tplan")
+
+save("moved_needles.mat", "moved_needles")
+
 
 % determine bool vector with 1 for each seed in full_tplan with is occupied
 % by a seed in t_plan

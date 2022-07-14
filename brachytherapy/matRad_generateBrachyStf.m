@@ -152,9 +152,11 @@ if (~isfield(pln.propStf, 'importSeedPos')| ~pln.propStf.importSeedPos)
     stf.seedPoints.z = reshape(Z,1,[]);
 
 else % if import is true
-
-    input = load('tplan_full_orig.mat', 'full_tplan_orig');
-    full_tplan = input.full_tplan_orig;
+    % load deformed needles
+    % tplan = calcDwellPoints()
+    
+    input = load('tplan_full.mat', 'full_tplan');
+    full_tplan = input.full_tplan;
     
     x = zeros(1,size(full_tplan,1));
     y = zeros(1,size(full_tplan,1));

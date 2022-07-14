@@ -1,9 +1,15 @@
 clear all 
-
+%%
 matRad_rc;
-pathStructureSet = "~/Daten/SS001.dcm"; 
-pathImg = "~/Daten/MR001.dcm";
+path = '~/Daten/Pat2/';
+pathStructureSet = [path, 'SS001.dcm']; 
+pathImg = [path, 'MR001.dcm'];
+pathPln = './basedata/PL001.dcm';
+
+%% Import data
 [cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+infoPl = dicominfo(pathPln);
+targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 
 %% I - set dose objectives for brachytherapy
 
@@ -11,17 +17,17 @@ pathImg = "~/Daten/MR001.dcm";
 
 % Prostate bed objective
 cst{1,3} = 'TARGET';
-cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(1,140));
+cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(100,targetDose));
 cst{1,5}.Priority = 3;
 
 % Rectum Objective
 cst{3,3}    =  'OAR';
-cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,120));
+cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(5,targetDose));
 cst{3,5}.Priority = 1;
 
 % Urethra Objective
 cst{2,3}    =  'OAR';
-cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(10,120));
+cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(1,targetDose));
 cst{2,5}.Priority = 2;
 
 
@@ -29,7 +35,7 @@ cst{2,5}.Priority = 2;
 
 % II.1 Treatment Plan
 pln.radiationMode   = 'brachy'; 
-pln.machine         = 'LDR';    % 'LDR' or 'HDR' for brachy
+pln.machine         = 'HDR';    % 'LDR' or 'HDR' for brachy
 
 % II.2 - needle and template geometry
 pln.propStf.importSeedPos           = 1; % 1 for true (seed positions are imported from tplan.mat file), 0 for false 
@@ -62,7 +68,7 @@ pln.propStf.template.activeNeedles = [0 0 0 0 0 0 0 0 0 0 0 0 0;... % 7.0
 pln.propStf.isoCenter    = matRad_getIsoCenter(cst,ct,0); %  target center
 
 % II.4 - dose calculation options
-pln.propDoseCalc.TG43approximation = '1D'; %'1D' for LDR or '2D' for HDR 
+pln.propDoseCalc.TG43approximation = '2D'; %'1D' for LDR or '2D' for HDR 
 
 pln.propDoseCalc.doseGrid.resolution.x = 1; % [mm]
 pln.propDoseCalc.doseGrid.resolution.y = 1; % [mm]
@@ -72,7 +78,7 @@ pln.propDoseCalc.DistanceCutoff    = 130; % [mm] sets the maximum distance
                                           % to which dose is calculated. 
 
 % the optimizer SA is used
-pln.propOpt.optimizer       = 'SA';
+pln.propOpt.optimizer       = 'IPOPT';%'SA';
 
 % II.5 - book keeping
 pln.propOpt.bioOptimization = 'none';
@@ -118,6 +124,8 @@ imagesc(resultGUI.physicalDose(:,:,slice)),colorbar, colormap(jet);
 % IV.2 Obtain dose statistics
 % Two more columns will be added to the cst structure depicting the DVH and
 % standard dose statistics such as D95,D98, mean dose, max dose etc.
-[dvh,qi] = matRad_indicatorWrapper(cst,pln,resultGUI, [140,210,280], [5, 90, 95, 98]);
+[dvh,qi] = matRad_indicatorWrapper(cst,pln,resultGUI, [targetDose,1.5*targetDose,2*targetDose], ...
+    [10,30, 90, 95]);
 
-
+save('dvh.mat','dvh');
+save('qi.mat', 'qi');

@@ -11,13 +11,13 @@ end
 
 if isempty(options)
     options.tolFun          = 1e-3;
-    options.maxIter         = 0;
+    options.maxIter         = 1e5;
     options.stallIterLimit  = 50;
     options.timeLimit       = 600;
     
     options.additionalSeeds = 0;
     options.additionalPositions = 0;
-    options.maxTempIter = 500;
+    options.maxTempIter = 100; %500
     options.linearParamTemperature = 10;
     options.speedParam = 0.6;
 
@@ -156,27 +156,48 @@ end
 function supp = getNextSeedConfiguration(supp,maxPos)
     ind = find(supp);
     indSupp = randi(numel(ind));
-    dir     = 2*(randi(2)-1)-1;
-    
-    indexToAdd = ind(indSupp);
-    validConfig = 0;
 
-    while validConfig==0
-        indexToAdd = indexToAdd+dir;
-        if indexToAdd<1
-            indexToAdd = maxPos;
-        end
-        if indexToAdd>maxPos
-            indexToAdd = 1;
+    todo = rand(1);
+
+    if(todo < 0.7)
+        % 70% chance for shifting a seed to an adjacent position 
+        dir     = 2*(randi(2)-1)-1;
+        indexToAdd = ind(indSupp);
+        validConfig = 0;
+    
+        while validConfig==0
+            indexToAdd = indexToAdd+dir;
+            if indexToAdd<1
+                indexToAdd = maxPos;
+            end
+            if indexToAdd>maxPos
+                indexToAdd = 1;
+            end
+        
+            if ~any(ind==indexToAdd)
+                validConfig=1;
+            end
         end
     
-        if ~any(ind==indexToAdd)
-            validConfig=1;
+        supp(ind(indSupp)) = 0;
+        supp(indexToAdd) = 1;
+
+    elseif (todo < 0.9)
+        % 20% chance for deleting the seed
+        supp(ind(indSupp)) = 0;
+    else
+        % 10% chance for adding a seed
+        validConfig = 0;
+
+        while (validConfig==0)
+            indAdd = randi(numel(supp));
+            if ~any(ind==indAdd)
+                validConfig=1;
+            end
         end
+            supp(indAdd) = 1;
     end
 
-    supp(ind(indSupp)) = 0;
-    supp(indexToAdd) = 1;
 
 end
 
