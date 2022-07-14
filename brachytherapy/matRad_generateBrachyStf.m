@@ -104,11 +104,6 @@ stf.targetVolume.Zvox = ct.z(coordsZ_vox);
 %         stf.targetVolume.Xvox = ct.x(coordsX_vox); % given in mm
 %         stf.targetVolume.Yvox = ct.y(coordsY_vox);
 %         stf.targetVolume.Zvox = ct.z(coordsZ_vox);
-%% meta info from pln
-stf.radiationMode = pln.radiationMode;
-stf.numOfSeedsPerNeedle = pln.propStf.needle.seedsNo;
-stf.numOfNeedles = nnz(pln.propStf.template.activeNeedles);
-stf.totalNumOfBixels = stf.numOfSeedsPerNeedle*stf.numOfNeedles; % means total number of seeds 
 
 %% generate 2D template points
 % the template origin is set at its center. In the image coordinate system,
@@ -123,27 +118,66 @@ templZ = ones(size(col))                 + pln.propStf.templateRoot(3);
 stf.template = [templX';templY';templZ'];
 
 
-
+ %% meta info from pln
+ stf.radiationMode = pln.radiationMode;
+   
         
 %% generate seed positions
-% seed positions can be generated from neeldes, template and oriantation
-% needles are assumed to go trough the template vertically
+% seed positions can be generated from needles, template and orientation
+% needles are assumed to go through the template vertically
 
 % needle position
-d = pln.propStf.needle.seedDistance;
-seedsNo = pln.propStf.needle.seedsNo;
-needleDist(1,1,:) = d.*[0:seedsNo-1]'; % 1x1xN Array with seed positions on needle
-needleDir = needleDist.*[0;0;1];
-seedPos_coord_need_seed = needleDir + stf.template;
-seedPos_need_seed_coord = shiftdim(seedPos_coord_need_seed,1);
-% the output array has the dimentions (needleNo,seedNo,coordinates)
-X = seedPos_need_seed_coord(:,:,1);
-Y = seedPos_need_seed_coord(:,:,2);
-Z = seedPos_need_seed_coord(:,:,3);
+% when import does not exist or is false create seed positons from template
+if (~isfield(pln.propStf, 'importSeedPos')| ~pln.propStf.importSeedPos)
 
-stf.seedPoints.x = reshape(X,1,[]);
-stf.seedPoints.y = reshape(Y,1,[]);
-stf.seedPoints.z = reshape(Z,1,[]);
+    % more meta data
+    stf.numOfSeedsPerNeedle = pln.propStf.needle.seedsNo;
+    stf.numOfNeedles = nnz(pln.propStf.template.activeNeedles);
+    stf.totalNumOfBixels = stf.numOfSeedsPerNeedle*stf.numOfNeedles; % means total number of seeds 
+
+    d = pln.propStf.needle.seedDistance;
+    seedsNo = pln.propStf.needle.seedsNo;
+    needleDist(1,1,:) = d.*[0:seedsNo-1]'; % 1x1xN Array with seed positions on needle
+    needleDir = needleDist.*[0;0;1];
+    seedPos_coord_need_seed = needleDir + stf.template;
+    seedPos_need_seed_coord = shiftdim(seedPos_coord_need_seed,1);
+    % the output array has the dimensions (needleNo,seedNo,coordinates)
+
+    X = seedPos_need_seed_coord(:,:,1);
+    Y = seedPos_need_seed_coord(:,:,2);
+    Z = seedPos_need_seed_coord(:,:,3);
+    
+    stf.seedPoints.x = reshape(X,1,[]);
+    stf.seedPoints.y = reshape(Y,1,[]);
+    stf.seedPoints.z = reshape(Z,1,[]);
+
+else % if import is true
+    % load deformed needles
+    % tplan = calcDwellPoints()
+    
+    input = load('tplan_full.mat', 'full_tplan');
+    full_tplan = input.full_tplan;
+    
+    x = zeros(1,size(full_tplan,1));
+    y = zeros(1,size(full_tplan,1));
+    z = zeros(1,size(full_tplan,1));
+
+    for i = 1:size(full_tplan,1)
+        x(i) = full_tplan{i,2}(1);
+        y(i) = full_tplan{i,2}(2);
+        z(i) = full_tplan{i,2}(3);
+    end
+        stf.seedPoints.x = x;
+        stf.seedPoints.y = y;
+        stf.seedPoints.z = z;
+        
+        % more meta data
+        stf.numOfSeedsPerNeedle = [];
+        stf.numOfNeedles = [];
+        stf.totalNumOfBixels = numel(stf.seedPoints.x); % means total number of seeds 
+        stf.template = [];
+
+end
 
 matRad_cfg.dispInfo('...100% ');
 

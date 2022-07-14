@@ -17,7 +17,7 @@ function DoseRate = matRad_getDoseRate1D_poly(machine,r_mm)
 %   TG43 consensus data   cm, cGy, s
 %   matRad                mm, Gy, s
 %   output dimensions depend on the dimensions of air kerma strength
-%   Sk, normallyi in cGy*cm^2/h)
+%   Sk, normally in cGy*cm^2/h)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Copyright 2021 the matRad development team. 

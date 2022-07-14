@@ -47,6 +47,10 @@ if ~exist('refGy', 'var') || isempty(refGy)
     refGy = floor(linspace(0,max(doseCube(:)),6)*10)/10;
 end
 
+if ~exist('refDxCC', 'var') || isempty(refDxCC)
+    refDxCC = [0.1 2];
+end
+
     
 % calculate QIs per VOI
 qi = struct;
@@ -74,6 +78,9 @@ for runVoi = 1:size(cst,1)
 
         DX = @(x) matRad_interp1(linspace(0,1,numOfVoxels),doseInVoi,(100-x)*0.01);
         VX = @(x) numel(doseInVoi(doseInVoi >= x)) / numOfVoxels;
+        voxelSize = 0.001* pln.propDoseCalc.doseGrid.resolution.x*...
+            pln.propDoseCalc.doseGrid.resolution.y*pln.propDoseCalc.doseGrid.resolution.z; % in cm³
+        DxCC = @(x) doseInVoi(end-round(x/voxelSize));
 
         % create VX and DX struct fieldnames at runtime and fill
         for runDX = 1:numel(refVol)
@@ -132,6 +139,15 @@ for runVoi = 1:size(cst,1)
                 voiPrint = sprintf('%sCI = %6.4f, HI = %5.2f for reference dose of %3.1f Gy\n',voiPrint,...
                                    qi(runVoi).(['CI_' StringReferenceDose 'Gy']),qi(runVoi).(['HI_' StringReferenceDose 'Gy']),referenceDose);
             end
+        else % vOI is not target
+
+            for runDxCC = 1:numel(refDxCC)
+                sRefDxCC = num2str(refDxCC(runDxCC),3);
+                qi(runVoi).(['D_' strrep(sRefDxCC,'.',''), 'CC']) = DxCC(refDxCC(runDxCC));
+                voiPrint = sprintf(['%sD' sRefDxCC 'CC = %6.2f Gy, '],voiPrint,DxCC(refDxCC(runDxCC)));
+            end
+            voiPrint = sprintf('%s\n%27s',voiPrint,' ');
+            
         end
         %We do it this way so the percentages in the string are not interpreted as format specifiers
         matRad_cfg.dispInfo('%s\n',voiPrint);    

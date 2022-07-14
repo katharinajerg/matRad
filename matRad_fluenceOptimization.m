@@ -209,6 +209,8 @@ if ~isfield(pln.propOpt,'optimizer')
 end
 
 switch pln.propOpt.optimizer
+    case 'SA'
+        optimizer = matRad_OptimizerSA;
     case 'IPOPT'
         optimizer = matRad_OptimizerIPOPT;
     case 'fmincon'
