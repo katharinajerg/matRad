@@ -118,7 +118,7 @@ if (strcmp(pln.machine,'LDR'))
     dose = DoseRate*0.01*machine.data.SourceIsotopeHalfLife*24/0.693147; % /ln(2)
     dij.physicalDose = {dose}; % dose in Gy
 else 
-    dij.phsicalDose = {DoseRate}; % dose rate in cGy per hours
+    dij.physicalDose = {DoseRate}; % dose rate in cGy per hours
 end
 
 % update waitbar, delete waitbar
