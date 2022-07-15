@@ -49,6 +49,10 @@ seedPoints.x = single(stf.seedPoints.x);
 seedPoints.y = single(stf.seedPoints.y);
 seedPoints.z = single(stf.seedPoints.z);
 
+seedPoints.x_orientation = single(stf.seedPoints.x_orientation);
+seedPoints.y_orientation = single(stf.seedPoints.y_orientation);
+seedPoints.z_orientation = single(stf.seedPoints.z_orientation);
+
 [XGrid,YGrid,ZGrid] = meshgrid(dij.doseGrid.x,dij.doseGrid.y,dij.doseGrid.z);
 dosePoints.x = single(reshape(XGrid,1,[]));
 dosePoints.y = single(reshape(YGrid,1,[]));
@@ -61,6 +65,7 @@ matRad_cfg.dispInfo('\t computing distance transform... ');
 % [seedPoint x dosePoint] matrix with relative distance as entries
 % detailed documentation in function
 DistanceMatrix = matRad_getDistanceMatrix(seedPoints,dosePoints);
+OrientationMatrix =  matRad_getOrientationMatrix(seedPoints,dosePoints);
 
 % ignore all distances > Cutoff for the following calculations to save time
 Ignore = DistanceMatrix.dist > pln.propDoseCalc.DistanceCutoff;
@@ -68,6 +73,10 @@ calcDistanceMatrix.x = DistanceMatrix.x(~Ignore);
 calcDistanceMatrix.y = DistanceMatrix.y(~Ignore);
 calcDistanceMatrix.z = DistanceMatrix.z(~Ignore);
 calcDistanceMatrix.dist = DistanceMatrix.dist(~Ignore);
+
+calcOrientationMatrix.x = OrientationMatrix.x_orientation(~Ignore);
+calcOrientationMatrix.y = OrientationMatrix.y_orientation(~Ignore);
+calcOrientationMatrix.z = OrientationMatrix.z_orientation(~Ignore);
 % remove singularities
 % calcDistanceMatrix.dist(calcDistanceMatrix.dist < machine.data.ActiveSourceLength) = machine.data.ActiveSourceLength;
 
@@ -88,7 +97,7 @@ end
 if strcmp(pln.propDoseCalc.TG43approximation,'2D')
     matRad_cfg.dispInfo('\t computing angle for TG43-2D... ');
     tmpTimer = tic;
-    [ThetaMatrix,~] = matRad_getThetaMatrix(pln.propStf.template.normal,calcDistanceMatrix);
+    [ThetaMatrix,~] = matRad_getThetaMatrix(calcOrientationMatrix,calcDistanceMatrix);
     matRad_cfg.dispInfo('done in %f s!\n',toc(tmpTimer));
 end
 
