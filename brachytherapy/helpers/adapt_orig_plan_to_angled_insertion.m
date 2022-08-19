@@ -1,8 +1,10 @@
 clear all
 close all
 
-% Pat4
-path = '~/Daten/Pat1/';
+% Pat
+patient = 4;
+path = ['~/Daten/Pat',num2str(patient),'/needle-insertion/'];
+save_dir = ['~/Results/2022_07_06 needle geometries/Pat',num2str(patient),'/'];
 D = '~/thindrives/Brachy18_02/dicom-dict-iotp.txt';
 info_pl = dicominfo([path,'PL001.dcm'],'dictionary',D);
 
@@ -217,18 +219,18 @@ for n = 1 : numel(needles)
         full_tplan_orig{ind,3}(3,1) = full_needles_orig{n}.needle_direction(3);
     end
 end
-save("tplan.mat", "moved_tplan")
-save("tplan_full.mat", "full_tplan")
-save("tplan_full_orig.mat", "full_tplan_orig")
-save("tplan_orig.mat", "tplan")
+save([save_dir,'tplan.mat'], "moved_tplan")
+save([save_dir,'tplan_full.mat'], "full_tplan")
+save([save_dir,'tplan_full_orig.mat'], "full_tplan_orig")
+save([save_dir,'tplan_orig.mat'], "tplan")
 
-save("moved_needles.mat", "moved_needles")
+save([save_dir,'moved_needles.mat'], "moved_needles")
 
 
-% determine bool vector with 1 for each seed in full_tplan with is occupied
+% determine bool vector with 1 for each seed in full_tplan which is occupied
 % by a seed in t_plan
 moved_pos = reshape(cell2mat(moved_tplan(:,2)),[3,size(moved_tplan,1)])';
 full_pos = reshape(cell2mat(full_tplan(:,2)),[3,size(full_tplan,1)])';
 supp = ismember(full_pos,moved_pos,'rows');
-save("supp.mat", "supp")
+save([save_dir, 'supp.mat'], "supp")
 

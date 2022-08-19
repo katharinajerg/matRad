@@ -8,9 +8,11 @@ dta = 3; % mm
 local = 0; % Perform global gamma
 
 %% read DICOM infos
-info_do = dicominfo('~/Daten/Pat4/DO001.dcm');
-info_pl = dicominfo('~/Daten/Pat4/PL001.dcm');
-info_mr = dicominfo('~/Daten/Pat4/MR001.dcm');
+path = '~/Daten/Pat3/seed-deposition/';
+info_do = dicominfo([path, 'DO001.dcm']);
+%%
+info_pl = dicominfo([path, 'PL001.dcm']);
+info_mr = dicominfo([path, 'MR001.dcm']);
 
 %% read dose
 do = dicomread(info_do);
@@ -109,8 +111,8 @@ xlabel('dose in Gy')
 ylabel('relative volume in %')
 target_dose = 160;
 P_D90  = getDx(v_rel_1, 90, bin_size);
-P_V100 = v_rel_1(target_dose/bin_size);
-P_V150 = v_rel_1(1.5*target_dose/bin_size);
+P_V100 = v_rel_1((target_dose/bin_size)+1);
+P_V150 = v_rel_1((1.5*target_dose/bin_size)+1);
 U_D10  = getDx(v_rel_2, 10, bin_size);
 U_D30  = getDx(v_rel_2, 30, bin_size);
 R_D2cc = getDx(v3, 2, bin_size);
@@ -122,14 +124,16 @@ fprintf(1 + ~(P_D90 > 0.9*target_dose), 'P_D90 is %3.2f Gy and should be greater
 fprintf(1 + ~(P_V100 > 95), 'P_V100 is %3.2f%% and should be greater than %d%%.\n', P_V100, 95);
 fprintf(1 + ~(P_V150 > 45 && P_V150 < 65), 'P_V150 is %3.2f%% and should be between %d%% and %d%%.\n', P_V150, 45, 65);
 fprintf(1 + ~(U_D10 < 1.5*target_dose), 'U_D10 is %3.2f Gy and should be less than %d Gy.\n', U_D10, 1.5*target_dose);
-fprintf(1 + ~(U_D30 < 1.3*target_dose), 'P_D30 is %3.2f Gy and should be less than %d Gy.\n', U_D30, 1.3*target_dose);
+fprintf(1 + ~(U_D30 < 1.3*target_dose), 'U_D30 is %3.2f Gy and should be less than %d Gy.\n', U_D30, 1.3*target_dose);
+fprintf(1 + ~(U_D10 < 1.5*target_dose), 'U_D10 is %3.2f%% and should be less than %d%%.\n', U_D10/target_dose*100, 150);
+fprintf(1 + ~(U_D30 < 1.3*target_dose), 'U_D30 is %3.2f%% and should be less than %d%%.\n', U_D30/target_dose*100, 130);
 fprintf(1 + ~(R_D2cc < 145), 'R_D2cc is %3.2f Gy and should be less than %d Gy.\n', R_D2cc, 145);
 fprintf(1 + ~(R_D01cc < 200), 'R_D01cc is %3.2f Gy and should be less than %d Gy.\n\n', R_D01cc, 200);
 
 function Dx = getDx(v_rel, x, bin_size)
     for i = 1:numel(v_rel)
         if (v_rel(i) < x)
-            Dx = (i-1)*bin_size + (v_rel(i-1)-x)/(v_rel(i-1)-v_rel(i))*bin_size;
+            Dx = (i-2)*bin_size + (v_rel(i-1)-x)/(v_rel(i-1)-v_rel(i))*bin_size;
             break;
         end
     end

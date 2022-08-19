@@ -39,7 +39,6 @@ function [ThetaMatrix,ThetaVector] = matRad_getThetaMatrix(templateNormal,Distan
 
 
 DistanceMatrix.dist(DistanceMatrix.dist == 0) = 1; %Avoid deviding by zero
-
 ThetaMatrix = acosd((templateNormal(1)*DistanceMatrix.x + templateNormal(2)*DistanceMatrix.y + templateNormal(3)*DistanceMatrix.z)./DistanceMatrix.dist);  
 if nargout == 2
     ThetaVector = reshape(ThetaMatrix,[],1);

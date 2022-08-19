@@ -4,8 +4,7 @@ function [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath)
 % data into matRad's native data formats
 % 
 % call
-% [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath)  
-% [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath)
+% [cst, ct] = matRad_importDicomUSStructureSet(structureSetPath, imgPath) 
 %
 % input
 %   structureSetPath: file to be imported which contains the structure set
