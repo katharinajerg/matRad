@@ -27,9 +27,6 @@ classdef MatRad_BrachyGeometryController
             myNeedles  = {obj.numberOfNeedles};
             parfor n = 1:obj.numberOfNeedles
                 n;
-%                 if(n ~= 3)
-%                    continue
-%                 end
                 needle = MatRad_BrachyNeedle(obj.supportPointSet(n), 15, 3, 5);
                 needle = needle.calc();
                 

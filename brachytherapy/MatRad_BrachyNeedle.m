@@ -173,7 +173,7 @@ classdef MatRad_BrachyNeedle
                 fdistance = blfn(x);
                 fx=  f(x);
                 mydwellPointsdistancesPlane(i, :) = [x, fdistance(1)];
-                if(fdistance(1)-seedPointsPlane(v,2)> obj.distance)
+                if(fdistance(1)-seedPointsPlane(v,2)> (obj.distance + obj.length))
                     v = v+1;
                     seedPointsPlane(v, : ) =  [x, fdistance(1)];
                     obj.dwellPointsPlane(v, : ) =  [x, fx(1)];

@@ -151,6 +151,11 @@ if (~isfield(pln.propStf, 'importSeedPos')| ~pln.propStf.importSeedPos)
     stf.seedPoints.y = reshape(Y,1,[]);
     stf.seedPoints.z = reshape(Z,1,[]);
 
+    seedpointSize = size(stf.seedPoints.x);
+    stf.seedPoints.x_orientation = zeros(seedpointSize);
+    stf.seedPoints.y_orientation = zeros(seedpointSize);
+    stf.seedPoints.z_orientation = ones(seedpointSize);
+
 else % if import is true
     % load deformed needles
     % tplan = calcDwellPoints()
@@ -162,14 +167,27 @@ else % if import is true
     y = zeros(1,size(full_tplan,1));
     z = zeros(1,size(full_tplan,1));
 
+    x_orientation = zeros(1,size(full_tplan,1));
+    y_orientation = zeros(1,size(full_tplan,1));
+    z_orientation = zeros(1,size(full_tplan,1));
+
     for i = 1:size(full_tplan,1)
         x(i) = full_tplan{i,2}(1);
         y(i) = full_tplan{i,2}(2);
         z(i) = full_tplan{i,2}(3);
+
+        x_orientation(i) = full_tplan{i,3}(1);
+        y_orientation(i) = full_tplan{i,3}(1);
+        z_orientation(i) = full_tplan{i,3}(1);
     end
         stf.seedPoints.x = x;
         stf.seedPoints.y = y;
         stf.seedPoints.z = z;
+
+        stf.seedPoints.x_orientation = x_orientation;
+        stf.seedPoints.y_orientation = y_orientation;
+        stf.seedPoints.z_orientation = z_orientation;
+	
         
         % more meta data
         stf.numOfSeedsPerNeedle = [];
