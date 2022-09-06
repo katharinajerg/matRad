@@ -69,7 +69,7 @@ calcDistanceMatrix.y = DistanceMatrix.y(~Ignore);
 calcDistanceMatrix.z = DistanceMatrix.z(~Ignore);
 calcDistanceMatrix.dist = DistanceMatrix.dist(~Ignore);
 % remove singularities
-% calcDistanceMatrix.dist(calcDistanceMatrix.dist < machine.data.ActiveSourceLength) = machine.data.ActiveSourceLength;
+calcDistanceMatrix.dist(calcDistanceMatrix.dist < machine.data.ActiveSourceLength) = machine.data.ActiveSourceLength;
 
 % now all fields of calcDistanceMatrix are n x 1 arrays!
 

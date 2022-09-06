@@ -1,13 +1,18 @@
 clear all 
 %%
 matRad_rc;
-path = '~/Daten/Pat2/';
+patient = 1;
+path = ['~/Daten/Pat',num2str(patient),'/needle-insertion/'];
 pathStructureSet = [path, 'SS001.dcm']; 
 pathImg = [path, 'MR001.dcm'];
-pathPln = './basedata/PL001.dcm';
+pathPln = [path,'PL001.dcm'];
+pathDefField = '/home/kjerg/Results/2022_08_18 tissue elasticity/Pat1/46800_140_results_physical_domain_10.vtu';
+%pathDefField = '/home/kjerg/Daten/example_deformation_field_small.vtu';
+
 
 %% Import data
-[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+%[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg,pathDefField);
 infoPl = dicominfo(pathPln);
 targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 
@@ -17,12 +22,12 @@ targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 
 % Prostate bed objective
 cst{1,3} = 'TARGET';
-cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(100,targetDose));
+cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(400,targetDose));
 cst{1,5}.Priority = 3;
 
 % Rectum Objective
 cst{3,3}    =  'OAR';
-cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(5,targetDose));
+cst{3,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(30,targetDose));
 cst{3,5}.Priority = 1;
 
 % Urethra Objective
@@ -35,7 +40,7 @@ cst{2,5}.Priority = 2;
 
 % II.1 Treatment Plan
 pln.radiationMode   = 'brachy'; 
-pln.machine         = 'HDR';    % 'LDR' or 'HDR' for brachy
+pln.machine         = 'LDR';    % 'LDR' or 'HDR' for brachy
 
 % II.2 - needle and template geometry
 pln.propStf.importSeedPos           = 1; % 1 for true (seed positions are imported from tplan.mat file), 0 for false 
@@ -68,7 +73,7 @@ pln.propStf.template.activeNeedles = [0 0 0 0 0 0 0 0 0 0 0 0 0;... % 7.0
 pln.propStf.isoCenter    = matRad_getIsoCenter(cst,ct,0); %  target center
 
 % II.4 - dose calculation options
-pln.propDoseCalc.TG43approximation = '2D'; %'1D' for LDR or '2D' for HDR 
+pln.propDoseCalc.TG43approximation = '1D'; %'1D' for LDR or '2D' for HDR 
 
 pln.propDoseCalc.doseGrid.resolution.x = 1; % [mm]
 pln.propDoseCalc.doseGrid.resolution.y = 1; % [mm]
@@ -78,7 +83,7 @@ pln.propDoseCalc.DistanceCutoff    = 130; % [mm] sets the maximum distance
                                           % to which dose is calculated. 
 
 % the optimizer SA is used
-pln.propOpt.optimizer       = 'IPOPT';%'SA';
+pln.propOpt.optimizer       = 'SA';%'IPOPT';
 
 % II.5 - book keeping
 pln.propOpt.bioOptimization = 'none';
@@ -103,7 +108,7 @@ disp(stf)
 
 % II.9 - Dose Calculation
 dij = matRad_calcBrachyDose(ct,stf,pln,cst);
-save("dij.mat", "dij")
+%save("dij.mat", "dij")
 
 
 %% III - Inverse Optimization for brachy therapy
@@ -125,7 +130,7 @@ imagesc(resultGUI.physicalDose(:,:,slice)),colorbar, colormap(jet);
 % Two more columns will be added to the cst structure depicting the DVH and
 % standard dose statistics such as D95,D98, mean dose, max dose etc.
 [dvh,qi] = matRad_indicatorWrapper(cst,pln,resultGUI, [targetDose,1.5*targetDose,2*targetDose], ...
-    [10,30, 90, 95]);
+    [10, 30, 90, 95]);
 
 save('dvh.mat','dvh');
 save('qi.mat', 'qi');

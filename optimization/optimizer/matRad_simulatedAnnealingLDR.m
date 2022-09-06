@@ -8,7 +8,6 @@ switch nargin
     case 3
         options = [];
 end
-
 if isempty(options)
     options.tolFun          = 1e-3;
     options.maxIter         = 1e5;
@@ -22,6 +21,7 @@ if isempty(options)
     options.speedParam = 0.6;
 
     options.importDefaultSeedPos = 1; %1 for seed position import. When importing seeds options.additialSeeds/Pos must be 0
+    options.defaultSeedPosPath = '~/Results/2022_07_06 needle geometries/Pat1/';
 end
 
 if options.additionalSeeds<=1
@@ -142,7 +142,7 @@ end
 function supp = getSpacedSeedConfiguration(totPositions,totSeeds, options)
 
     if options.importDefaultSeedPos
-        load('supp.mat', 'supp');
+        load([options.defaultSeedPosPath,'supp.mat'], 'supp');
         supp = double(supp);
     else
         distSeed = floor(totPositions/(totSeeds+2));
@@ -159,8 +159,8 @@ function supp = getNextSeedConfiguration(supp,maxPos)
 
     todo = rand(1);
 
-    if(todo < 0.7)
-        % 70% chance for shifting a seed to an adjacent position 
+    if(todo < 0.6)
+        % 60% chance for shifting a seed to an adjacent position 
         dir     = 2*(randi(2)-1)-1;
         indexToAdd = ind(indSupp);
         validConfig = 0;
@@ -183,7 +183,7 @@ function supp = getNextSeedConfiguration(supp,maxPos)
         supp(indexToAdd) = 1;
 
     elseif (todo < 0.9)
-        % 20% chance for deleting the seed
+        % 30% chance for deleting the seed
         supp(ind(indSupp)) = 0;
     else
         % 10% chance for adding a seed
