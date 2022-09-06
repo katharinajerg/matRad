@@ -6,9 +6,13 @@ path = ['~/Daten/Pat',num2str(patient),'/needle-insertion/'];
 pathStructureSet = [path, 'SS001.dcm']; 
 pathImg = [path, 'MR001.dcm'];
 pathPln = [path,'PL001.dcm'];
+pathDefField = '/home/kjerg/Results/2022_08_18 tissue elasticity/Pat1/46800_140_results_physical_domain_10.vtu';
+%pathDefField = '/home/kjerg/Daten/example_deformation_field_small.vtu';
+
 
 %% Import data
-[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+%[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg,pathDefField);
 infoPl = dicominfo(pathPln);
 targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 
