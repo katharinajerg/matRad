@@ -122,13 +122,11 @@ ct.cubeHU = ct.cube;
 end
 
 %% function to create deformed masks
-
 function [deformMask, imgSize] = createDeformedMask(imgInfo, referenceInfo, contour, imgSize, deformationDataPath, roiName)
-
 
 originalMask = createMask(contour,char(roiName),referenceInfo);
 
-% zero padding of 20 mm to account for deformed structure 
+% zero padding of 20 mm to account for deformation of the structure 
 for i = 1:ceil(20/imgInfo.PixelSpacing(3)) 
     originalMask(:,:,size(originalMask,3)+1) = zeros([size(originalMask,1),size(originalMask,2)]);
 end
@@ -209,11 +207,26 @@ deformMask = zeros(size(originalMask));
 for i = 1:numel(x)
     deformedPoints = [deformedField(i,1), deformedField(i,2), deformedField(i,3)];
     diffInX = abs(x_position - deformedPoints(1));
-    [diff_1,indX] = min(diffInX);
+    [~,indX] = min(diffInX);
+    if(indX < 1)
+        indX = 1;
+    elseif(indX > imgSize(1))
+       indX = imgSize(1);
+    end
     diffInY = abs(y_position - deformedPoints(2));
-    [diff_2,indY] = min(diffInY);
+    [~,indY] = min(diffInY);
+    if(indY < 1)
+        indY = 1;
+    elseif(indY > imgSize(2))
+       indY = imgSize(2);
+    end
     diffInZ = abs(z_position - deformedPoints(3));
-    [diff_3,indZ] = min(diffInZ);
+    [~,indZ] = min(diffInZ);
+    if(indZ < 1)
+        indZ = 1;
+    elseif(indZ > imgSize(3))
+       indZ = imgSize(3);
+    end
     deformMask(indX,indY,indZ) = 1;
 end
 
