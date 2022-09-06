@@ -217,4 +217,17 @@ for i = 1:numel(x)
     deformMask(indX,indY,indZ) = 1;
 end
 
+%% fill holes at cell boundaries
+for i = 2:(size(deformMask,1)-1)
+    for j = 2:(size(deformMask,2)-1)
+        for k = 2:(size(deformMask,3)-1)
+            if(deformMask(i,j,k) == 0 & ...
+                    (deformMask(i-1,j,k) + deformMask(i+1,j,k) + deformMask(i,j-1,k) + deformMask(i,j+1,k) + ...
+                    deformMask(i,j,k-1) + deformMask(i,j,k+1))>=3)
+                deformMask(i,j,k) = 1;
+            end
+        end
+    end
+end
+
 end
