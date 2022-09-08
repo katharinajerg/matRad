@@ -6,8 +6,8 @@ path = ['~/Daten/Pat',num2str(patient),'/needle-insertion/'];
 pathStructureSet = [path, 'SS001.dcm']; 
 pathImg = [path, 'MR001.dcm'];
 pathPln = [path,'PL001.dcm'];
-pathDefField = '/home/kjerg/Results/2022_08_18 tissue elasticity/Pat1/46800_140_results_physical_domain_10.vtu';
-%pathDefField = '/home/kjerg/Daten/example_deformation_field_small.vtu';
+%pathDefField = '/home/kjerg/Results/2022_08_18 tissue elasticity/Pat1/46800_140_results_physical_domain_10.vtu';
+pathDefField = '/home/kjerg/Daten/example_deformation_field_small.vtu';
 
 
 %% Import data
@@ -19,7 +19,6 @@ targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 %% I - set dose objectives for brachytherapy
 
 % Set the prostate as the Target amd remaining structures as OARs
-
 % Prostate bed objective
 cst{1,3} = 'TARGET';
 cst{1,6}{1} = struct(DoseObjectives.matRad_SquaredUnderdosing(400,targetDose));

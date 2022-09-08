@@ -105,18 +105,6 @@ stf.targetVolume.Zvox = ct.z(coordsZ_vox);
 %         stf.targetVolume.Yvox = ct.y(coordsY_vox);
 %         stf.targetVolume.Zvox = ct.z(coordsZ_vox);
 
-%% generate 2D template points
-% the template origin is set at its center. In the image coordinate system,
-% the center will be positioned at the bottom of the volume of interest.
-
-[row,col] = find(pln.propStf.template.activeNeedles);
-templX = col*pln.propStf.bixelWidth + pln.propStf.templateRoot(1) - (13+1)/2*pln.propStf.bixelWidth;
-templY = row*pln.propStf.bixelWidth + pln.propStf.templateRoot(2) - (13+1)/2*pln.propStf.bixelWidth;
-templZ = ones(size(col))                 + pln.propStf.templateRoot(3);
-
-
-stf.template = [templX';templY';templZ'];
-
 
  %% meta info from pln
  stf.radiationMode = pln.radiationMode;
@@ -129,6 +117,17 @@ stf.template = [templX';templY';templZ'];
 % needle position
 % when import does not exist or is false create seed positons from template
 if (~isfield(pln.propStf, 'importSeedPos')| ~pln.propStf.importSeedPos)
+
+    %% generate 2D template points
+    % the template origin is set at its center. In the image coordinate system,
+    % the center will be positioned at the bottom of the volume of
+    % interest.
+    [row,col] = find(pln.propStf.template.activeNeedles);
+    templX = col*pln.propStf.bixelWidth + pln.propStf.templateRoot(1) - (13+1)/2*pln.propStf.bixelWidth;
+    templY = row*pln.propStf.bixelWidth + pln.propStf.templateRoot(2) - (13+1)/2*pln.propStf.bixelWidth;
+    templZ = ones(size(col))                 + pln.propStf.templateRoot(3);
+    
+    stf.template = [templX';templY';templZ'];
 
     % more meta data
     stf.numOfSeedsPerNeedle = pln.propStf.needle.seedsNo;
@@ -156,11 +155,11 @@ if (~isfield(pln.propStf, 'importSeedPos')| ~pln.propStf.importSeedPos)
     stf.seedPoints.y_orientation = zeros(seedpointSize);
     stf.seedPoints.z_orientation = ones(seedpointSize);
 
-else % if import is true
-    % load deformed needles
+elseif (pln.propStf.importSeedPos == 1) 
+    % load dwell points from tplan file
     % tplan = calcDwellPoints()
     
-    input = load('tplan_full.mat', 'full_tplan');
+    input = load('./brachytherapy/data/tplan_full.mat', 'full_tplan');
     full_tplan = input.full_tplan;
     
     x = zeros(1,size(full_tplan,1));
@@ -180,21 +179,65 @@ else % if import is true
         y_orientation(i) = full_tplan{i,3}(1);
         z_orientation(i) = full_tplan{i,3}(1);
     end
-        stf.seedPoints.x = x;
-        stf.seedPoints.y = y;
-        stf.seedPoints.z = z;
 
-        stf.seedPoints.x_orientation = x_orientation;
-        stf.seedPoints.y_orientation = y_orientation;
-        stf.seedPoints.z_orientation = z_orientation;
-	
-        
-        % more meta data
-        stf.numOfSeedsPerNeedle = [];
-        stf.numOfNeedles = [];
-        stf.totalNumOfBixels = numel(stf.seedPoints.x); % means total number of seeds 
-        stf.template = [];
+    stf.seedPoints.x = x;
+    stf.seedPoints.y = y;
+    stf.seedPoints.z = z;
 
+    stf.seedPoints.x_orientation = x_orientation;
+    stf.seedPoints.y_orientation = y_orientation;
+    stf.seedPoints.z_orientation = z_orientation;
+
+    % more meta data
+    stf.numOfSeedsPerNeedle = [];
+    stf.numOfNeedles = [];
+    stf.totalNumOfBixels = numel(stf.seedPoints.x); % means total number of seeds 
+    stf.template = [];
+
+elseif (pln.propStf.importSeedPos == 2)
+    %load support points, which represent the needles' paths from file
+
+    load('./brachytherapy/data/suppPoints1.mat', 'supportPoints');
+    numNeedles = size(supportPoints,1);
+    needleController = MatRad_BrachyGeometryController(supportPoints, numNeedles, ...
+        pln.propStf.needle.seedDistance, pln.propStf.needle.seedsNo);
+    needleController = needleController.calcNeedles();
+    
+    x = [];
+    y = [];
+    z = [];
+    x_orientation = [];
+    y_orientation = [];
+    z_orientation = [];
+
+    for n = 1:needleController.numberOfNeedles
+        for d = 1:size(needleController.needleSet{n}.dwellPointList,2)
+            x  = [x, needleController.needleSet{n}.dwellPointList{d}.positionX];
+            y  = [y, needleController.needleSet{n}.dwellPointList{d}.positionY];
+            z  = [z, needleController.needleSet{n}.dwellPointList{d}.positionZ];
+
+            x_orientation  = [x_orientation, needleController.needleSet{n}.dwellPointList{d}.orientationX];
+            y_orientation  = [y_orientation, needleController.needleSet{n}.dwellPointList{d}.orientationY];
+            z_orientation  = [z_orientation, needleController.needleSet{n}.dwellPointList{d}.orientationZ];
+        end
+    end
+
+    stf.seedPoints.x = x;
+    stf.seedPoints.y = y;
+    stf.seedPoints.z = z;
+
+    stf.seedPoints.x_orientation = x_orientation;
+    stf.seedPoints.y_orientation = y_orientation;
+    stf.seedPoints.z_orientation = z_orientation;
+
+    % more meta data
+    stf.numOfSeedsPerNeedle = pln.propStf.needle.seedsNo;
+    stf.numOfNeedles = needleController.numberOfNeedles;
+    stf.totalNumOfBixels = numel(stf.seedPoints.x); % means total number of seeds 
+    stf.template = [];
+
+else
+    error('No known action where to get the dwell points from. pln.propStf.importSeedPos must be either 0, 1, or 2.')
 end
 
 matRad_cfg.dispInfo('...100% ');
@@ -225,7 +268,7 @@ end
 
 
 % trow warning if seed points are more then twice the central
-% distange outsidethe TARGET volume or if no sed points are in the
+% distange outside the TARGET volume or if no seed points are in the
 % target volume
 
 if (max(stf.seedPoints.x-pln.propStf.templateRoot(1)) >= 4*max(stf.targetVolume.Xvox-pln.propStf.templateRoot(1)) ||...

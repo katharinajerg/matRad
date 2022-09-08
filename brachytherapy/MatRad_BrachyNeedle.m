@@ -68,9 +68,7 @@ classdef MatRad_BrachyNeedle
             e2 = obj.supportPoints{1}(2, :);
             e3 = obj.supportPoints{1}(thirdPointIndex, :);
             v1 = e2 -e1;
-%             v1 = v1/norm(v1);
             v2 = e3 -e1;
-%             v2 = v2/norm(v2);
             [v1, v2];
 
             while matRad_linearDependent(v1,v2) && (thirdPointIndex < anzSuppPoints)
@@ -78,7 +76,6 @@ classdef MatRad_BrachyNeedle
                 thirdPointIndex  = thirdPointIndex+1;
                 e3 = obj.supportPoints{1}(thirdPointIndex, :);
                 v2 = e3 -e1;
-%                 v2 = v2/norm(v2);
             end
 
             if matRad_linearDependent(v1,v2)
@@ -108,7 +105,7 @@ classdef MatRad_BrachyNeedle
             % to calculate the dwellpoints and its orientations.
             
             if strcmp(obj.environment , 'Line')
-                %grade
+                %gerade
                 'Line';
                  obj = obj.calcLine();
             elseif strcmp(obj.environment,'Plane')
@@ -141,7 +138,7 @@ classdef MatRad_BrachyNeedle
 
             obj.spline = csapi(obj.planePoints(:, 1), obj.planePoints(:, 2));
             
-             [breaks,coefs,l,k,d] = unmkpp(obj.spline);
+            [breaks,coefs,l,k,d] = unmkpp(obj.spline);
             f = @(x)ppval(obj.spline, x);
             % make the polynomial that describes the derivative
             diff = mkpp(breaks,repmat(k-1:-1:1,d*l,1).*coefs(:,1:k-1),d);
@@ -157,7 +154,7 @@ classdef MatRad_BrachyNeedle
             obj.dwellPointsPlane = zeros([maxSeets 2]);
 
             i = 1;
-            v= 1;
+            v = 1;
             obj.dwellPointsPlaneList = struct([]);
 
             %Ausgangspunkt
@@ -173,19 +170,21 @@ classdef MatRad_BrachyNeedle
                 fdistance = blfn(x);
                 fx=  f(x);
                 mydwellPointsdistancesPlane(i, :) = [x, fdistance(1)];
-                if(fdistance(1)-seedPointsPlane(v,2)> (obj.distance + obj.length))
+                if(fdistance(1)-seedPointsPlane(v,2) > obj.distance)
                     v = v+1;
                     seedPointsPlane(v, : ) =  [x, fdistance(1)];
-                    obj.dwellPointsPlane(v, : ) =  [x, fx(1)];
-                     obj.dwellPointsPlaneList{v} =  {[x, fx(1)], diffn(x)};
-%                     [x, fdistance(1), seedPointsPlane(v-1,2),seedPointsPlane(v, : ),  obj.dwellPointsPlane(v, : )]
+                    obj.dwellPointsPlane(v, : ) = [x, fx(1)];
+                    obj.dwellPointsPlaneList{v} = {[x, fx(1)], diffn(x)};
                 end
                 i = i+1;
+            end
+            if(v < maxSeets)
+                warning('Needle is too short to fit all wanted dwell points. Check input data.')
             end
         end
 
         function obj = calcDwellPoints(obj)
-            %back transformationen to standard basis
+            %back transformation to standard basis
             
             obj.planePoints;
             
@@ -196,10 +195,9 @@ classdef MatRad_BrachyNeedle
                 dwellPoint = obj.T * transpose(p) + transpose(obj.plane{1});
                 m = (obj.dwellPointsPlaneList{i}(1,2));
                 v1 = obj.T * transpose([1 m{1} 0]);
-                v1 =v1/norm(v1);
+                v1 = v1/norm(v1);
                 obj.dwellPoints(i, :) = dwellPoint;
                 obj.dwellPointList{i} = MatRad_BrachyDwellpoint(dwellPoint, v1);
-                
             end
         end
 
@@ -228,7 +226,6 @@ classdef MatRad_BrachyNeedle
                 dwellPoint = obj.supportPoints{1}(1, :) +  seed*obj.distance*v1;
                 obj.dwellPoints(seed+1, :) = transpose(dwellPoint);            
                 obj.dwellPointList{seed+1} = MatRad_BrachyDwellpoint(dwellPoint, v1);
-
             end
         end
 

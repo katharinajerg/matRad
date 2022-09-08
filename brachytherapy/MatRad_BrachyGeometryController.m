@@ -8,15 +8,20 @@ classdef MatRad_BrachyGeometryController
         supportPointSet     % Support point set for all needles
         numberOfNeedles     % Total number of Needles
         needleSet           % Set of all needles
+        seedDistance        % Distance in mm between seeds
+        numSeedsPerNeedle   % Number of seeds per needle
     end
     
     methods
-        function obj = MatRad_BrachyGeometryController(mySuppPointSet, myNumberOfNeedles)
+        function obj = MatRad_BrachyGeometryController(mySuppPointSet, myNumberOfNeedles, mySeedDistance, myNumSeeds)
             %MATRAD_BRACHYGEOMETRYCONTROLLER Construct an instance of this class
             %    Setting base parameters
             obj.supportPointSet = mySuppPointSet;
             obj.numberOfNeedles = myNumberOfNeedles;
             obj.needleSet = {};
+            obj.seedDistance = mySeedDistance;
+            obj.numSeedsPerNeedle = myNumSeeds;
+
           
         end
         
@@ -25,12 +30,10 @@ classdef MatRad_BrachyGeometryController
             %Each support point set is handled by an instance  of
             %MatRad_BrachyNeedle.
             myNeedles  = {obj.numberOfNeedles};
-            parfor n = 1:obj.numberOfNeedles
-                n;
-                needle = MatRad_BrachyNeedle(obj.supportPointSet(n), 15, 3, 5);
+            for n = 1:obj.numberOfNeedles
+                needle = MatRad_BrachyNeedle(obj.supportPointSet(n), 200, obj.seedDistance, obj.numSeedsPerNeedle);
                 needle = needle.calc();
                 
-
                 myNeedles{n} = needle;
                 
             end
