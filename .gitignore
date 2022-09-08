@@ -1,2 +1,4 @@
 MCsquare/bin/Materials/
 *.mat
+*.asv
+*.directory
