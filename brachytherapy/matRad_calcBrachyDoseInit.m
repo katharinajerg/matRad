@@ -55,8 +55,8 @@ switch pln.radiationMode
         dij.totalNumOfRays      = sum(dij.numOfRaysPerBeam);
     case 'brachy'
         dij.numOfScenarios      = 1;
-        dij.numOfBeams          = 1;
-        dij.beamNum             = 1;
+        dij.numOfBeams          = 0;
+        dij.beamNum             = 0;
         dij.numOfNeedles        = stf.numOfNeedles;
         dij.numOfSeedsPerNeedle = stf.numOfSeedsPerNeedle;
         dij.totalNumOfSeeds     = stf.totalNumOfBixels;

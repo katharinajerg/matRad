@@ -57,8 +57,19 @@ end
 % manual interpolation for only one query point to save time
 if numel(x) == 1
     
-    ix1 = find((x >= xi), 1, 'last');
-    ix2 = find((x <= xi), 1, 'first');
+    if ~isdlarray(xi)
+        ix1 = find((x >= xi), 1, 'last');
+        ix2 = find((x <= xi), 1, 'first');
+    else
+        ix1 = sum(x>= xi);
+        if (ix1 == 0) % extrapolation
+            ix1 = 1;
+        end
+        ix2 = numel(xi)+1-sum(x <= xi);
+        if(ix2 > numel(xi)) % extrapolation
+            ix2 = ix2-1;
+        end
+    end
     
     if ix1 == ix2
         y = yi(ix1,:);

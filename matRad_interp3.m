@@ -46,7 +46,11 @@ end
 
 switch env
     case 'MATLAB'
-        y = interp3(xi,yi,zi,x,xq,yq,zq,mode,extrapVal);
+        if (~isdlarray(x))
+            y = interp3(xi,yi,zi,x,xq,yq,zq,mode,extrapVal);
+        else
+            y = matRad_interp3dlarray(xi,yi,zi,x,xq,yq,zq);
+        end
     case 'OCTAVE'
         [xqMesh,yqMesh,zqMesh] = meshgrid(xq,yq,zq);
         y = interp3(xi,yi,zi,x,xqMesh,yqMesh,zqMesh,mode,extrapVal);

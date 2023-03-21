@@ -47,10 +47,10 @@ figure
 plotContour(contour)
 
 % get geometric information
-factor_x = 1/3; % number of pixel factor
-factor_y = 1/3; % number of pixel factor
-factor_z = 3;
-imgSize = [floor(imgInfo.Rows*factor_y) floor(imgInfo.Columns*factor_x) factor_z*size(contour.ROIs.ContourData{1,1},1)]; % x = columns is second cube dimension
+factor_x = 1/10;%1/3; % number of pixel factor
+factor_y = 1/10;%1/3; % number of pixel factor
+factor_z = 3;%3;
+imgSize = [floor(imgInfo.Rows*factor_y) floor(imgInfo.Columns*factor_x) factor_z*size(contour.ROIs.ContourData{1,1},1)-(factor_z-1)]; % x = columns is second cube dimension
 imgInfo.PixelSpacing(1) = imgInfo.PixelSpacing(1)/factor_x;
 imgInfo.PixelSpacing(2) = imgInfo.PixelSpacing(2)/factor_y;
 imgInfo.PixelSpacing(3) = (contour.ROIs.ContourData{1,1}{1,1}(1,3)-contour.ROIs.ContourData{1,1}{2,1}(1,3))/factor_z;
@@ -68,7 +68,6 @@ referenceInfo = imref3d(imgSize,xlim,ylim,zlim);
 roiName = contour.ROIs.Name;
 cst = cell(height(roiName),6);
 cst(:,2) = roiName;
-completeMask = 0;
 for i = 1:size(roiName)
 
     cst(i,1) = {i-1};
@@ -78,7 +77,10 @@ for i = 1:size(roiName)
     else
         mask = createMask(contour,char(roiName(i)),referenceInfo);
     end
-    completeMask = completeMask + mask;
+    if (i==1)
+        completeMask = zeros(size(mask));
+    end
+    completeMask(mask) = i;
     cst{i,4}{1,1} = find(mask);
     cst{i,5} = struct('Priority',0,'Visible',1,'visibleColor', ...
         [0.33,0.667-1*0.2,1*0.2]);

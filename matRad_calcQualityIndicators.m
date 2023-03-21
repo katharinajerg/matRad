@@ -61,7 +61,11 @@ for runVoi = 1:size(cst,1)
     voiPrint = sprintf('%3d %20s',cst{runVoi,1},cst{runVoi,2}); %String that will print quality indicators
     
     % get Dose, dose is sorted to simplify calculations
-    doseInVoi    = sort(doseCube(indices));
+    if ~isdlarray(doseCube)
+        doseInVoi    = sort(doseCube(indices));
+    else
+        doseInVoi    = matRad_sortdlarray(doseCube(indices));
+    end
         
     if ~isempty(doseInVoi)
         
@@ -77,10 +81,10 @@ for runVoi = 1:size(cst,1)
                            voiPrint,qi(runVoi).mean,qi(runVoi).std,qi(runVoi).max,qi(runVoi).min,' ');
 
         DX = @(x) matRad_interp1(linspace(0,1,numOfVoxels),doseInVoi,(100-x)*0.01);
-        VX = @(x) numel(doseInVoi(doseInVoi >= x)) / numOfVoxels;
+        VX = @(x) 1-matRad_interp1(doseInVoi', dlarray(linspace(0,1,numOfVoxels)'), x); %
         voxelSize = 0.001* pln.propDoseCalc.doseGrid.resolution.x*...
             pln.propDoseCalc.doseGrid.resolution.y*pln.propDoseCalc.doseGrid.resolution.z; % in cm³
-        DxCC = @(x) doseInVoi(end-round(x/voxelSize));
+        %DxCC = @(x) doseInVoi(end-round(x/voxelSize));
 
         % create VX and DX struct fieldnames at runtime and fill
         for runDX = 1:numel(refVol)
@@ -92,6 +96,7 @@ for runVoi = 1:size(cst,1)
             sRefGy = num2str(refGy(runVX),3);
             qi(runVoi).(['V_' strrep(sRefGy,'.','_') 'Gy']) = VX(refGy(runVX));
             voiPrint = sprintf(['%sV' sRefGy 'Gy = %6.2f%%, '],voiPrint,VX(refGy(runVX))*100);
+
         end
         voiPrint = sprintf('%s\n%27s',voiPrint,' ');
 
@@ -141,12 +146,12 @@ for runVoi = 1:size(cst,1)
             end
         else % vOI is not target
 
-            for runDxCC = 1:numel(refDxCC)
-                sRefDxCC = num2str(refDxCC(runDxCC),3);
-                qi(runVoi).(['D_' strrep(sRefDxCC,'.',''), 'CC']) = DxCC(refDxCC(runDxCC));
-                voiPrint = sprintf(['%sD' sRefDxCC 'CC = %6.2f Gy, '],voiPrint,DxCC(refDxCC(runDxCC)));
-            end
-            voiPrint = sprintf('%s\n%27s',voiPrint,' ');
+%             for runDxCC = 1:numel(refDxCC)
+%                 sRefDxCC = num2str(refDxCC(runDxCC),3);
+%                 qi(runVoi).(['D_' strrep(sRefDxCC,'.',''), 'CC']) = DxCC(refDxCC(runDxCC));
+%                 voiPrint = sprintf(['%sD' sRefDxCC 'CC = %6.2f Gy, '],voiPrint,DxCC(refDxCC(runDxCC)));
+%             end
+%             voiPrint = sprintf('%s\n%27s',voiPrint,' ');
             
         end
         %We do it this way so the percentages in the string are not interpreted as format specifiers
@@ -160,7 +165,11 @@ end
 listOfFields = fieldnames(qi);
 for i = 1:size(cst,1)
   indices     = cst{i,4}{1};
-  doseInVoi    = sort(doseCube(indices));
+  if ~isdlarray(doseCube)
+     doseInVoi    = sort(doseCube(indices));
+  else
+     doseInVoi    = matRad_sortdlarray(doseCube(indices));
+  end
   if isempty(doseInVoi)
       for j = 1:numel(listOfFields)
           qi(i).(listOfFields{j}) = NaN;

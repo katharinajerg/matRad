@@ -34,10 +34,19 @@ function gL = matRad_radialDoseFunction(r,gLTab)
     rmin = gLTab{1}(1);
     rmax = gLTab{1}(end);
     polyCoefficients = polyfit(gLTab{1},gLTab{2},5);
-    gL = zeros(size(r));
-    gL(r>=rmin & r<=rmax) = polyval(polyCoefficients,r(r>=rmin & r<=rmax));
+
+    if (~isdlarray(r))
+        gL = zeros(size(r));
+        gL(r>=rmin & r<=rmax) = polyval(polyCoefficients,r(r>=rmin & r<=rmax));
+    else
+        gL = dlarray(zeros(size(r)));
+        gL(r>=rmin & r<=rmax) = matRad_evaluatePoly5(polyCoefficients,r(r>=rmin & r<=rmax));
+    end
+
     gL(r<rmin) = gLTab{2}(1);
     gL(r>rmax) = gLTab{2}(end) + ...
                  (gLTab{2}(end)-gLTab{2}(end-1)) / (gLTab{1}(end)-...
-                 gLTab{1}(end-1)).*(r(r>rmax)-gLTab{1}(end));
+                  gLTab{1}(end-1)).*(r(r>rmax)-gLTab{1}(end));
 end
+
+

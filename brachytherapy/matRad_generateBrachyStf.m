@@ -75,13 +75,6 @@ end
 % Convert linear indices to 3D voxel coordinates
 [coordsY_vox, coordsX_vox, coordsZ_vox] = ind2sub(ct.cubeDim,V);
 
-%translate to geometric coordinates and save in stf
-
-stf.targetVolume.Xvox = ct.x(coordsX_vox); % angabe in mm
-stf.targetVolume.Yvox = ct.y(coordsY_vox);
-stf.targetVolume.Zvox = ct.z(coordsZ_vox);
-
-
 % % calculate rED or rSP from HU
 % ct = matRad_calcWaterEqD(ct, pln);
 
@@ -101,9 +94,6 @@ end
 stf.targetVolume.Xvox = ct.x(coordsX_vox);
 stf.targetVolume.Yvox = ct.y(coordsY_vox);
 stf.targetVolume.Zvox = ct.z(coordsZ_vox);
-%         stf.targetVolume.Xvox = ct.x(coordsX_vox); % given in mm
-%         stf.targetVolume.Yvox = ct.y(coordsY_vox);
-%         stf.targetVolume.Zvox = ct.z(coordsZ_vox);
 
 
  %% meta info from pln
@@ -236,6 +226,24 @@ elseif (pln.propStf.importSeedPos == 2)
     stf.totalNumOfBixels = numel(stf.seedPoints.x); % means total number of seeds 
     stf.template = [];
 
+elseif (pln.propStf.importSeedPos == 3)
+    %do not define any seed positions. Will be defined later. Used for
+    %automatic differentiation of seed position.
+
+    stf.seedPoints.x = [];
+    stf.seedPoints.y = [];
+    stf.seedPoints.z = [];
+
+    stf.seedPoints.x_orientation = [];
+    stf.seedPoints.y_orientation = [];
+    stf.seedPoints.z_orientation = [];
+
+    % more meta data
+    stf.numOfSeedsPerNeedle = [];
+    stf.numOfNeedles = [];
+    stf.totalNumOfBixels = numel(stf.seedPoints.x); % means total number of seeds 
+    stf.template = [];
+
 else
     error('No known action where to get the dwell points from. pln.propStf.importSeedPos must be either 0, 1, or 2.')
 end
@@ -265,25 +273,6 @@ if visMode > 0
     trisurf(k,P(:,1),P(:,2),P(:,3),'FaceColor','red','FaceAlpha',0.1,'LineStyle','none')
     hold off;
 end
-
-
-% trow warning if seed points are more then twice the central
-% distange outside the TARGET volume or if no seed points are in the
-% target volume
-
-if (max(stf.seedPoints.x-pln.propStf.templateRoot(1)) >= 4*max(stf.targetVolume.Xvox-pln.propStf.templateRoot(1)) ||...
-        min(stf.seedPoints.x-pln.propStf.templateRoot(1)) <= 4*min(stf.targetVolume.Xvox-pln.propStf.templateRoot(1)) ||...
-    max(stf.seedPoints.y-pln.propStf.templateRoot(2)) >= 4*max(stf.targetVolume.Yvox-pln.propStf.templateRoot(2)) ||...
-        min(stf.seedPoints.y-pln.propStf.templateRoot(2)) <= 4*min(stf.targetVolume.Yvox-pln.propStf.templateRoot(2)) || ...
-    max(stf.seedPoints.z-pln.propStf.templateRoot(3)) >= 4*max(stf.targetVolume.Zvox-pln.propStf.templateRoot(3)) ||...
-        min(stf.seedPoints.z-pln.propStf.templateRoot(3)) <= 4*min(stf.targetVolume.Zvox-pln.propStf.templateRoot(3)))
-        matRad_cfg.dispWarning('Seeds far outside the target volume');
-end
-if (max(stf.targetVolume.Xvox) <= min(stf.seedPoints.x) || min(stf.targetVolume.Xvox) >= max(stf.seedPoints.x) ||...
-    max(stf.targetVolume.Yvox) <= min(stf.seedPoints.y) || min(stf.targetVolume.Yvox) >= max(stf.seedPoints.y) ||...
-    max(stf.targetVolume.Zvox) <= min(stf.seedPoints.z) || min(stf.targetVolume.Zvox) >= max(stf.seedPoints.z))
-        matRad_cfg.dispWarning('no seed points in VOI')
-end    
 
 end
 

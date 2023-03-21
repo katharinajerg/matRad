@@ -1,4 +1,4 @@
-function dij = matRad_calcBrachyDose(ct,stf,pln,cst)
+function dij = matRad_calcBrachyDose(ct,stf,pln,cst,x)
 % matRad_calcBrachyDose calculates dose influence matrix according to the
 % AAPM update Rivard et al. 2004
 %
@@ -11,6 +11,7 @@ function dij = matRad_calcBrachyDose(ct,stf,pln,cst)
 %               (positions and constraints of patient structures)
 %   pln:        matRad plan meta information struct
 %   stf:        struct containing geometric information
+%   x:          (optional) 3n vector with seed positions (x_1, y_1, z_1, ..., y_n, z_n)
 %
 % output
 %   dij:        stuct containing dose influence information
@@ -45,13 +46,30 @@ startTime = tic;
 % "dosePoints" and "seedPoints" are both structs with fields x,y,z:
 % each contains a 1D row vector of position components [mm]
 
-seedPoints.x = single(stf.seedPoints.x);
-seedPoints.y = single(stf.seedPoints.y);
-seedPoints.z = single(stf.seedPoints.z);
+if ~exist('x','var') || isempty(x) 
+    seedPoints.x = single(stf.seedPoints.x);
+    seedPoints.y = single(stf.seedPoints.y);
+    seedPoints.z = single(stf.seedPoints.z);
+    
+    seedPoints.x_orientation = single(stf.seedPoints.x_orientation);
+    seedPoints.y_orientation = single(stf.seedPoints.y_orientation);
+    seedPoints.z_orientation = single(stf.seedPoints.z_orientation);
+else
+    numSeedCoordinates = numel(x);
+    assert(mod(numSeedCoordinates, 3)==0, 'The size of the vector defining the seed positions can not be devided by 3. Check seed position vector.\n')
+    numSeeds = numSeedCoordinates/3;
+    seeds = reshape(x,[3,numSeeds]);
 
-seedPoints.x_orientation = single(stf.seedPoints.x_orientation);
-seedPoints.y_orientation = single(stf.seedPoints.y_orientation);
-seedPoints.z_orientation = single(stf.seedPoints.z_orientation);
+    seedPoints.x = single(seeds(1,:));
+    seedPoints.y = single(seeds(2,:));
+    seedPoints.z = single(seeds(3,:));
+
+    seedPoints.x_orientation = zeros(1,numSeeds);
+    seedPoints.y_orientation = zeros(1,numSeeds);
+    seedPoints.z_orientation = ones(1,numSeeds);
+end
+
+
 
 [XGrid,YGrid,ZGrid] = meshgrid(dij.doseGrid.x,dij.doseGrid.y,dij.doseGrid.z);
 dosePoints.x = single(reshape(XGrid,1,[]));
@@ -108,7 +126,12 @@ waitbar(0.25);
 
 matRad_cfg.dispInfo('\t computing dose-rate for TG43-%s... ',pln.propDoseCalc.TG43approximation);
 tmpTimer = tic;
-DoseRate = zeros(length(dosePoints.x),length(seedPoints.x));
+if (exist('x','var') && isdlarray(x))
+    DoseRate = dlarray(zeros(length(dosePoints.x),length(seedPoints.x)));
+else
+    DoseRate = zeros(length(dosePoints.x),length(seedPoints.x));
+end
+
 switch pln.propDoseCalc.TG43approximation
     case '1D'        
         DoseRate(~Ignore) = ...

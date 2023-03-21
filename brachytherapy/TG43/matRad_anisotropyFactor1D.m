@@ -35,8 +35,17 @@ function PhiAn = matRad_anisotropyFactor1D(r,PhiAnTab, L)
 rmin = PhiAnTab{1}(1);
 rmax = PhiAnTab{1}(end);
 p = polyfit(PhiAnTab{1},PhiAnTab{2},5);
-PhiAn = zeros(size(r));
-PhiAn(r>=rmin & r<=rmax) = polyval(p,r(r>=rmin & r<=rmax));
+if (~isdlarray(r))
+    PhiAn = zeros(size(r));
+    PhiAn(r>=rmin & r<=rmax) = polyval(p,r(r>=rmin & r<=rmax));
+
+else
+    PhiAn = dlarray(zeros(size(r)));
+    PhiAn(r>=rmin & r<=rmax) = matRad_evaluatePoly5(p,r(r>=rmin & r<=rmax));
+
+end
+
 PhiAn(r>rmax) = PhiAnTab{2}(end);
 PhiAn(r<rmin) = PhiAnTab{2}(1).*(atan(L./2./r(r<rmin))./(L.*r(r<rmin)))./(atan(L./2./rmin)./(L.*rmin));
+
 end
