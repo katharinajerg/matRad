@@ -32,12 +32,15 @@ function [ct, cst, pln, stf] = matRad_automaticDifferentiationInit()
 matRad_rc;
 patient = 2;
 path = ['~/Daten/Pat',num2str(patient),'/scan+plan/'];
+%path = ['~/thindrives/ProstateData/',num2str(patient),'/IntraOp/IntraOp/'];
 pathStructureSet = [path, 'SS001.dcm']; 
 pathImg = [path, 'MR001.dcm'];
 pathPln = [path,'PL001.dcm'];
 
 %% Import data
-[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+[cst, ct] = matRad_importDicomDummyCuboidStructureSet(pathStructureSet,pathImg);
+%[cst, ct] = matRad_importDicomDummySphericalStructureSet(pathStructureSet,pathImg);
+%[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
 infoPl = dicominfo(pathPln);
 targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 
@@ -141,9 +144,12 @@ pln.propStf.isoCenter    = matRad_getIsoCenter(cst,ct,0); %  target center
 
 pln.propDoseCalc.TG43approximation = '1D'; %'1D' or '2D' 
 
-pln.propDoseCalc.doseGrid.resolution.x = 1; % [mm]
-pln.propDoseCalc.doseGrid.resolution.y = 1; % [mm]
-pln.propDoseCalc.doseGrid.resolution.z = 2.5; % [mm]
+% set dose cube resolution to same as ct resolution in order to avoid
+% interpolation. Without optimization the size of the dose cube can as well
+% be large.
+pln.propDoseCalc.doseGrid.resolution.x = 0.1;% ct.resolution.x; % [mm]
+pln.propDoseCalc.doseGrid.resolution.y = 0.1;% ct.resolution.y; % [mm]
+pln.propDoseCalc.doseGrid.resolution.z = 0.1;% ct.resolution.z; % [mm]
 
 pln.propDoseCalc.DistanceCutoff    = 130; %[mm] sets the maximum distance
                                             %to which dose is calculated. 

@@ -103,6 +103,11 @@ end
 % group similar fields together
 resultGUI = orderfields(resultGUI);
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% this interpolation takes pretty long. -> for differentiation make sure that 
+% the dose cube and the ct cube have the same dimensions. Then this loop is 
+% not entered
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % interpolation if dose grid does not match ct grid
 if any(dij.ctGrid.dimensions~=dij.doseGrid.dimensions)
    myFields = fieldnames(resultGUI);
@@ -118,7 +123,8 @@ if any(dij.ctGrid.dimensions~=dij.doseGrid.dimensions)
        end
        
    end   
-end
+end           
+ 
 
 end
 

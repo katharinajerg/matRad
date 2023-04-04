@@ -36,16 +36,23 @@ function [qi, dqidx] = matRad_automaticDifferentiation(x)
     resultGUI = matRad_calcCubes(w,dij);
     doseCube = resultGUI.physicalDose;
 
+    % plot dose and ct slice for visualization
+    doseSlice = extractdata(doseCube(:,:,floor(size(doseCube,3)/2)));
+    ctCube = ct.cube{1,1};
+    ctSlice = ctCube(:,:,floor(size(ctCube,3)/2));
+    ctSliceFiltered = edge(ctSlice);
+    doseSlice = doseSlice + max(doseSlice(:))*ctSliceFiltered;
+    figure
+    imagesc(doseSlice)
+    
     % calculate QI
     refGy = 160;
     refVol = 90;
     qi_all = matRad_calcQualityIndicators(cst,pln,doseCube,refGy,refVol);
 
-    % !!! Define wanted QI here!!!
-%     qiD = qi_all(1,1).D_90;
-    qi = qi_all(1,1).V_160Gy;
-    %dqiddx = dlgradient(qiD,x);
-    dqidx = dlgradient(qiV,x);
+    % Define wanted QI here
+    qi = 100*qi_all(1,1).V_160Gy;
+    dqidx = dlgradient(qi,x);
 
 end
 

@@ -23,11 +23,13 @@ function [xSorted] = matRad_sortdlarray(x)
 %
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-    xSorted = x;
-    for i = 1:numel(x)
-        [minValue, ind] = min(x);
-        xSorted(i) = minValue;
-        x(ind) = [];   
-    end
+    % get permutation indices from build in sort function
+    xCopy = extractdata(x);
+    [sorted,p] = sort(xCopy);
+
+    % permute dlarray. This permutation is differentiable.
+    xSorted = x(p);
+
+
 end
 
