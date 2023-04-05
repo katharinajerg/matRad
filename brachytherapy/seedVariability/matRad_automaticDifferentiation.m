@@ -28,6 +28,14 @@ function [qi, dqidx] = matRad_automaticDifferentiation(x)
     % Init structs
     [ct, cst, pln, stf] = matRad_automaticDifferentiationInit();
 
+    % check for seeds exactly on voxel boundary to avoid NaN gradients
+    seeds = reshape(extractdata(x), [3,numel(x)/3]);
+    for s = 1:size(seeds,2)
+        if( ismember(seeds(1,s), ct.x) && ismember(seeds(2,s), ct.y) && ismember(seeds(3,s), ct.z))
+            x((s-1)*3+1) = x((s-1)*3+1)+0.0001;
+        end
+    end
+   
     % calculate dose influence matrix
     dij = matRad_calcBrachyDose(ct,stf,pln,cst,x);
  
