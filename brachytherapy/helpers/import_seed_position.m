@@ -3,7 +3,7 @@ clear all;
 close all;
 clc;
 
-patient = 30;
+patient = 90;
 path_1 = ['~/thindrives/ProstateData/',num2str(patient),'/IntraOp/IntraOp/'];
 
 D = '/home/kjerg/Daten/dicom-dict-iotp.txt';

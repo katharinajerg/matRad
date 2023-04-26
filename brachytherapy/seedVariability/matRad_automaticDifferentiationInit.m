@@ -1,4 +1,4 @@
-function [ct, cst, pln, stf] = matRad_automaticDifferentiationInit()
+function [ct, cst, pln, stf] = matRad_automaticDifferentiationInit(id)
 %MATRAD_AUTOMATICDIFFERENTIATIONINIT is a matRad function to initialize all
 % data for the differentiation of a qualitiy measure.
 % 
@@ -30,19 +30,20 @@ function [ct, cst, pln, stf] = matRad_automaticDifferentiationInit()
 % matRad root directory with all its subdirectories is added to the Matlab 
 % search path.
 matRad_rc;
-patient = 2;
-path = ['~/Daten/Pat',num2str(patient),'/scan+plan/'];
-%path = ['~/thindrives/ProstateData/',num2str(patient),'/IntraOp/IntraOp/'];
+patient = id;
+patientId = 1000+patient;
+path = ['~/thindrives/ProstateData/',num2str(patient),'/IntraOp/IntraOp/'];
+%path = ['~/thindrives/ProstateData/Pat',num2str(patient),'/'];
 pathStructureSet = [path, 'SS001.dcm']; 
 pathImg = [path, 'MR001.dcm'];
 pathPln = [path,'PL001.dcm'];
 
 %% Import data
-[cst, ct] = matRad_importDicomDummyCuboidStructureSet(pathStructureSet,pathImg);
+%[cst, ct] = matRad_importDicomDummyCuboidStructureSet(pathStructureSet,pathImg);
 %[cst, ct] = matRad_importDicomDummySphericalStructureSet(pathStructureSet,pathImg);
-%[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
+[cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
 infoPl = dicominfo(pathPln);
-targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
+targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose
 
 
 %% I - set dose objectives for brachytherapy
@@ -64,6 +65,10 @@ cst{2,6}{1} = struct(DoseObjectives.matRad_SquaredOverdosing(1,targetDose));
 cst{2,5}.Priority = 2;
 
 ct.info = 'automaticDiffInit';
+
+save(['cst_',num2str(patientId), '.mat'], "cst");
+save(['ct_',num2str(patientId), '.mat'], "ct");
+
 
 
 %% II.1 Treatment Plan
@@ -147,9 +152,9 @@ pln.propDoseCalc.TG43approximation = '1D'; %'1D' or '2D'
 % set dose cube resolution to same as ct resolution in order to avoid
 % interpolation. Without optimization the size of the dose cube can as well
 % be large.
-pln.propDoseCalc.doseGrid.resolution.x = 0.1;% ct.resolution.x; % [mm]
-pln.propDoseCalc.doseGrid.resolution.y = 0.1;% ct.resolution.y; % [mm]
-pln.propDoseCalc.doseGrid.resolution.z = 0.1;% ct.resolution.z; % [mm]
+pln.propDoseCalc.doseGrid.resolution.x = ct.resolution.x; % [mm]
+pln.propDoseCalc.doseGrid.resolution.y = ct.resolution.y; % [mm]
+pln.propDoseCalc.doseGrid.resolution.z = ct.resolution.z; % [mm]
 
 pln.propDoseCalc.DistanceCutoff    = 130; %[mm] sets the maximum distance
                                             %to which dose is calculated. 
@@ -179,7 +184,7 @@ disp(pln);
 % target volume, number of needles, seeds and the positions of all needles
 % The one in the end enables visualization.
 stf = matRad_generateStf(ct,cst,pln,1);
-save(['stf_',num2str(patient), '.mat'], "stf");
+save(['stf_',num2str(patientId), '.mat'], "stf");
 
 
 %% II.2 - view stf

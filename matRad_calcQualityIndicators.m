@@ -54,7 +54,7 @@ end
     
 % calculate QIs per VOI
 qi = struct;
-for runVoi = 1%:size(cst,1)
+for runVoi = 1:size(cst,1)
     
     indices     = cst{runVoi,4}{1};
     numOfVoxels = numel(indices); 
@@ -84,7 +84,7 @@ for runVoi = 1%:size(cst,1)
         VX = @(x) 1-matRad_interp1(doseInVoi', dlarray(linspace(0,1,numOfVoxels)'), x); %
         voxelSize = 0.001* pln.propDoseCalc.doseGrid.resolution.x*...
             pln.propDoseCalc.doseGrid.resolution.y*pln.propDoseCalc.doseGrid.resolution.z; % in cm³
-        %DxCC = @(x) doseInVoi(end-round(x/voxelSize));
+        DxCC = @(x) doseInVoi(end-round(x/voxelSize));
 
         % create VX and DX struct fieldnames at runtime and fill
         for runDX = 1:numel(refVol)
@@ -146,12 +146,14 @@ for runVoi = 1%:size(cst,1)
             end
         else % vOI is not target
 
-%             for runDxCC = 1:numel(refDxCC)
-%                 sRefDxCC = num2str(refDxCC(runDxCC),3);
-%                 qi(runVoi).(['D_' strrep(sRefDxCC,'.',''), 'CC']) = DxCC(refDxCC(runDxCC));
-%                 voiPrint = sprintf(['%sD' sRefDxCC 'CC = %6.2f Gy, '],voiPrint,DxCC(refDxCC(runDxCC)));
-%             end
-%             voiPrint = sprintf('%s\n%27s',voiPrint,' ');
+            for runDxCC = 1:numel(refDxCC)
+                sRefDxCC = num2str(refDxCC(runDxCC),3);
+                if (runDxCC < (voxelSize*numOfVoxels))
+                    qi(runVoi).(['D_' strrep(sRefDxCC,'.',''), 'CC']) = DxCC(refDxCC(runDxCC));
+                    voiPrint = sprintf(['%sD' sRefDxCC 'CC = %6.2f Gy, '],voiPrint,DxCC(refDxCC(runDxCC)));
+                end
+            end
+            voiPrint = sprintf('%s\n%27s',voiPrint,' ');
             
         end
         %We do it this way so the percentages in the string are not interpreted as format specifiers
@@ -163,7 +165,7 @@ end
 
 % assign VOI names which could be corrupted due to empty structures
 listOfFields = fieldnames(qi);
-for i = 1%:size(cst,1)
+for i = 1:size(cst,1)
   indices     = cst{i,4}{1};
   if ~isdlarray(doseCube)
      doseInVoi    = sort(doseCube(indices));

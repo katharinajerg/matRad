@@ -2,7 +2,10 @@ clear all
 close all
 
 % Pat
-patient = 4;
+patient = 126;
+% path =['~/thindrives/ProstateData/',num2str(patient),'/IntraOp/IntraOp/'];
+% save_dir = path;
+% D = '~/thindrives/2023_01_09_LDR_tissue_deformation/dicom-dict-iotp.txt';
 path = ['~/Daten/Pat',num2str(patient),'/needle-insertion/'];
 save_dir = ['~/Results/2022_07_06 needle geometries/Pat',num2str(patient),'/'];
 D = '~/thindrives/Brachy18_02/dicom-dict-iotp.txt';
@@ -224,7 +227,7 @@ save([save_dir,'tplan_full.mat'], "full_tplan")
 save([save_dir,'tplan_full_orig.mat'], "full_tplan_orig")
 save([save_dir,'tplan_orig.mat'], "tplan")
 
-save([save_dir,'moved_needles.mat'], "moved_needles")
+% save([save_dir,'moved_needles.mat'], "moved_needles")
 
 
 % determine bool vector with 1 for each seed in full_tplan which is occupied
