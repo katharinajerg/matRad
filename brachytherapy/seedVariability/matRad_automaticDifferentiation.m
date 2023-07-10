@@ -41,7 +41,7 @@ function [qi, dqidx] = matRad_automaticDifferentiation(x)
     end
    
     % calculate dose influence matrix
-    dij = matRad_calcBrachyDose(ct,stf,pln,cst,x);
+    dij = matRad_calcBrachyDose(ct,stf,pln,cst,x,id);
  
     % calculate dose cube from dose influence matrix
     w = ones(numel(x)/3,1);
@@ -57,13 +57,15 @@ function [qi, dqidx] = matRad_automaticDifferentiation(x)
     figure
     imagesc(doseSlice)
     
-    % calculate QI
+    % calculate dose parameter
     refGy = 160;
-    refVol = 30;
+    refVol = 90;         % Define reference volume. e.g. 90 when calculating D_90
     qi_all = matRad_calcQualityIndicators(cst,pln,doseCube,refGy,refVol);
-
-
-    qi = qi_all(3).D_2CC;
+    
+    % Define wanted dose paramter here! 
+    % (1): Prostate, (2): Uethra, (3): Rectum 
+    % .V_160Gy for V100, .D_90 for D90, .D_2CC for D2cc 
+    qi = qi_all(1).D_90; 
     dqidx = dlgradient(qi,x);
 
     % dose contraints

@@ -111,8 +111,8 @@ end
 
 % adapt machine file with current DICOM plan
 try
-   info_pl = dicominfo('~/Daten/Pat1/needle-insertion/PL001.dcm');
-   machine.data.SourceStrengthImplanted = info_pl.SourceSequence.Item_1.ReferenceAirKermaRate;
+   info_pl = dicominfo(['..\BRACHYTHERAPY_data\',num2str(id),'\IntraOp\IntraOp\PL001.dcm']);
+   machine.data.SourceStrengthImplanted = info_pl.SourceSequence.Item_1.ReferenceAirKermaRate; 
 catch
    matRad_cfg.dispError('Could not find a planning file to update the machine information. Default machine is used.\n'); 
 end

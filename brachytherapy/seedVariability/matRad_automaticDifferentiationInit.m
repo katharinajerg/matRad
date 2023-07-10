@@ -32,22 +32,18 @@ function [ct, cst, pln, stf] = matRad_automaticDifferentiationInit(id)
 matRad_rc;
 patient = id;
 patientId = 1000+patient;
-path = ['~/thindrives/ProstateData/',num2str(patient),'/IntraOp/IntraOp/'];
-%path = ['~/thindrives/ProstateData/Pat',num2str(patient),'/'];
+path = ['..\BRACHYTHERAPY_data\',num2str(patient),'\IntraOp\IntraOp\'];
 pathStructureSet = [path, 'SS001.dcm']; 
 pathImg = [path, 'MR001.dcm'];
 pathPln = [path,'PL001.dcm'];
 
 %% Import data
-%[cst, ct] = matRad_importDicomDummyCuboidStructureSet(pathStructureSet,pathImg);
-%[cst, ct] = matRad_importDicomDummySphericalStructureSet(pathStructureSet,pathImg);
 [cst, ct] = matRad_importDicomUSStructureSet(pathStructureSet,pathImg);
 infoPl = dicominfo(pathPln);
-targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose
+targetDose = infoPl.DoseReferenceSequence.Item_1.TargetPrescriptionDose;
 
 
 %% I - set dose objectives for brachytherapy
-
 % Set the prostate as the Target amd remaining structures as OARs
 % Prostate bed objective
 cst{1,3} = 'TARGET';

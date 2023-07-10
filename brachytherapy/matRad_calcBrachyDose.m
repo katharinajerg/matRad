@@ -1,4 +1,4 @@
-function dij = matRad_calcBrachyDose(ct,stf,pln,cst,x)
+function dij = matRad_calcBrachyDose(ct,stf,pln,cst,x,id)
 % matRad_calcBrachyDose calculates dose influence matrix according to the
 % AAPM update Rivard et al. 2004
 %
@@ -12,6 +12,7 @@ function dij = matRad_calcBrachyDose(ct,stf,pln,cst,x)
 %   pln:        matRad plan meta information struct
 %   stf:        struct containing geometric information
 %   x:          (optional) 3n vector with seed positions (x_1, y_1, z_1, ..., y_n, z_n)
+%   id:         (optional) patient id for loading machine data
 %
 % output
 %   dij:        stuct containing dose influence information
@@ -31,6 +32,10 @@ function dij = matRad_calcBrachyDose(ct,stf,pln,cst,x)
 % LICENSE file.
 %
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if ~exist('id','var') || isempty(id) 
+    id = 1;
+end
 
 %%Configure
 matRad_cfg =  MatRad_Config.instance();
