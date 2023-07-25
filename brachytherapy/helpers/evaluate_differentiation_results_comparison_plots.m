@@ -8,6 +8,7 @@ close all
 
 % patient data sets
 patientIds = 1:35;
+targetNames = {'P_V100', 'P_D90', 'R_D2cc', 'U_D30'};
 data = cell(size(patientIds,2),1);  
 
 % load data
@@ -24,8 +25,6 @@ for i = 1:size(patientIds,2)
     fval_R_D2cc = load([path, 'R_D2cc\fval_',num2str(id),'.mat']).fval;
 
     % fill data struct with information 
-    targetNames = {'P_V100', 'P_D90', 'R_D2cc', 'U_D30'};
-
     for t = 1:length(targetNames)
         targetName = targetNames{t};
         gradval_name  = [ 'gradval_',targetName];
@@ -227,10 +226,10 @@ end
 
 %% plot 3D views
 % load data
-for i = [4,29]%1:size(patientIds,2)
-    for t = 1:length(targetNames)
-        targetName = targetNames{t};
-        fieldname_gradMag = [targetName, '_gradMagnitudes'];
+for i = 29
+    % for t = 1:length(targetNames)
+    %     targetName = targetNames{t};
+    %     fieldname_gradMag = [targetName, '_gradMagnitudes'];
        
         id = patientIds(i)+1000;
         % prostate information
@@ -245,21 +244,87 @@ for i = [4,29]%1:size(patientIds,2)
     
         % seed positions
         load(['..\BRACHYTHERAPY_data\',num2str(id-1000),'\IntraOp\IntraOp\tplan_orig.mat']);
-    
-        % for each seed get distance to urethra, rectum and prostate surface
-        factor = 1;
-        urethra_cube = zeros(size(ct.cube{1}));
-        urethra_cube(cst{2,4}{1}) = 1;
-        urethra_cube = imresize3(urethra_cube, factor);
-        surface_urethra = isosurface(X, Y, Z,urethra_cube, 0.5);
-    
+
+        % prepare figure
         width = 800;
         height = 800;
         fontsize = 28;
         fontname = 'Times New Roman';
         figure('Color', 'w', 'Position', [100, 100, width, height]);
+        hold on 
+        view(3)
+        ax = gca; 
+        xlim([-27 27])
+        ylim([-60 0])
+        zlim([-40 0])
+        axis off
+
+        % plot slice (dummy, which is out of visible range in order to get
+        % axis settings from wrap)
+        camera_pos = ax.CameraPosition;
+        camera_target = ax.CameraTarget;
+        slice_num = 8;
+        warp(X(:,:,slice_num),Y(:,:,slice_num),20*ones(size(X(:,:,slice_num))),zeros(size(X(:,:,slice_num))));
+        ax.CameraPosition = camera_pos;
+        ax.CameraTarget = camera_target;
+        ax.View = [-37.5,30];
+
+        % plot seeds halos
+        ax2 = axes;
+        warp(X(:,:,slice_num),Y(:,:,slice_num),-50*ones(size(X(:,:,slice_num))),zeros(size(X(:,:,slice_num))));
+        ax2.Color = 'none';
+        ax2.View = ax.View;
+        ax2.XLim = ax.XLim;
+        ax2.YLim = ax.YLim;
+        ax2.ZLim = ax.ZLim;
+        ax2.CameraPosition = camera_pos;
+        ax2.CameraTarget = camera_target;
+        axis off
+        %S = 80;
+        hold on 
+        %targetNamesHalo = {'P_D90', 'R_D2cc', 'U_D30'};
+        targetNamesHalo = {'R_D2cc'};
+        gradients = zeros(size(tplan,1), length(targetNamesHalo));
+        for s = 1:size(tplan,1)
+            for t = 1:length(targetNamesHalo)
+                targetName = targetNamesHalo{t};
+                fieldname_gradMag = [targetName, '_gradMagnitudes'];
+                point_coordinates = cell2mat(tplan(s,2))';
+                gradients(s,t) = data{i}.(fieldname_gradMag)(s);
+            end
+        end
+        allGradients = sum(gradients,2);
+        allInverseGradients = 1.5*ones(size(allGradients))./allGradients;
+        %allInverseGradients = 3*ones(size(allGradients))./allGradients;
+        for s = 1:size(tplan,1)
+            point_coordinates = cell2mat(tplan(s,2))';
+            [Xcirc,Ycirc,Zcirc] = ellipsoid(point_coordinates(1),point_coordinates(2),point_coordinates(3),allInverseGradients(s),allInverseGradients(s),0.001);
+            x_col = Xcirc-point_coordinates(1);
+            y_col = Ycirc-point_coordinates(2);
+            r = sqrt(x_col.^2 + y_col.^2)/allInverseGradients(s);
+            r_seed = 0.5;
+            [Xseed,Yseed,Zseed] = ellipsoid(point_coordinates(1),point_coordinates(2),point_coordinates(3),r_seed, r_seed, 2);
+            if allInverseGradients(s) < 5
+                surf(Xcirc,Ycirc,Zcirc,r,'FaceAlpha',0.5,'EdgeColor','none');
+                surf(Xseed,Yseed,Zseed,'FaceColor',[0 0 0], 'FaceAlpha',0.5,'EdgeColor','none');
+            else
+                surf(Xseed,Yseed,Zseed,'FaceColor',[0 0.9 0.1], 'FaceAlpha',0.5,'EdgeColor','none');
+            end
+            %scatter3(point_coordinates(1),point_coordinates(2),point_coordinates(3),S, data{i}.(fieldname_gradMag)(s), 'filled')
+        end      
+        cmap = flipud(hsv);
+        cmap(1:156, :) = repmat(cmap(156,:), 156,1);
+        colormap(cmap);
+        m = length(cmap);
+        %cindex = fix((data{i}.(fieldname_gradMag)-cmin)/(cmax-cmin)*m)+1;
+
+        % plot organ surfaces
+        factor = 1;
+        urethra_cube = zeros(size(ct.cube{1}));
+        urethra_cube(cst{2,4}{1}) = 1;
+        urethra_cube = imresize3(urethra_cube, factor);
+        surface_urethra = isosurface(X, Y, Z,urethra_cube, 0.5);
         p = patch(surface_urethra);
-        view(3); 
         set(p,'FaceColor',[0.5 0.5 0.5], 'FaceAlpha', 0.5, 'EdgeColor','none');  
         camlight;
         lighting gouraud;
@@ -289,40 +354,40 @@ for i = [4,29]%1:size(patientIds,2)
         Z = cat(3,Z,ones(size(Z,1,2))*z_2_val);
         prostate_cube = cat(3,ones(size(prostate_cube,1,2)), prostate_cube);
         prostate_cube = cat(3,prostate_cube, ones(size(prostate_cube,1,2)));
-        
         surface_prostate = isosurface(X, Y, Z, prostate_cube, 0.5);
-    
         p = patch(surface_prostate);
-        set(p,'FaceColor',[0.8 0.8 0.8], 'FaceAlpha', 0.5, 'EdgeColor','none');  
+        set(p,'FaceColor',[0.8 0.8 0.8], 'FaceAlpha', 0.3, 'EdgeColor','none');  
         set(p,'EdgeColor','none');
         camlight;
         lighting gouraud;
-    
-        % plot seeds and extract needleIdx
-        S = 80;
-        hold on 
-        for s = 1:size(tplan,1)
-            point_coordinates = cell2mat(tplan(s,2))';
-            scatter3(point_coordinates(1),point_coordinates(2),point_coordinates(3),S, data{i}.(fieldname_gradMag)(s), 'filled')
-        end
-        c = colorbar;
-        c.Position =  [0.83 0.15 0.03 0.7];
 
-      
-        colormap(jet)
-        cmap = colormap;
-        cmin = 0;%min(data{i}.(fieldname_gradMag)(:));
-        cmax = max(data{i}.(fieldname_gradMag)(:));
-        clim([cmin cmax])
-        m = length(cmap);
-        cindex = fix((data{i}.(fieldname_gradMag)-cmin)/(cmax-cmin)*m)+1;
-        if contains(targetName,'D')
-            set(c.XLabel,{'String','Rotation','Position'},{'Gy/mm',0,[0.5 -(cmax/20)]})
-            %c.Title.String = "Gy/mm";
-        else 
-            set(c.XLabel,{'String','Rotation','Position'},{'1/mm',0,[0.5 -(cmax/20)]})
-            %c.Title.String = "1/mm";
-        end
+        % % add contour
+        % info = dicominfo(pathStructureSet);
+        % contour = dicomContours(info);
+        % try 
+        %     contour = deleteContour(contour, 1);
+        %     contour = deleteContour(contour, 3); 
+        %     contour = deleteContour(contour, 4);
+        % catch 
+        % end
+        % geometricType = "Closed_planar";
+        % sliceContour = contour.ROIs(1,:).ContourData{1,1};
+        % sliceContour([1:4,6:end]) = [];
+        % contour = addContour(contour, 3, "ProstateSlice", sliceContour, geometricType, [0,0,255]);
+        % sliceContour = contour.ROIs(2,:).ContourData{1,1};
+        % sliceContour([1:4,6:end]) = [];
+        % contour = addContour(contour, 4, 'RectumSlice', sliceContour, geometricType, [0,0,255]);
+        % contour = deleteContour(contour, 0);
+        % contour = deleteContour(contour, 2);
+        % plotContour(contour)
+        % 
+        % % US plane
+        % [xi, yi] = meshgrid([-24,24],[-58,-2]);
+        % zi = contour.ROIs(1,:).ContourData{1,1}{1}(1,3)*ones(size(xi));
+        % ci(:,:,1) = zeros(size(xi));
+        % ci(:,:,2) = zeros(size(xi));
+        % ci(:,:,3) = ones(size(xi));
+        % surf(xi,yi,zi,ci,'EdgeAlpha', 0, 'FaceAlpha', 0.15)
 
         %plot needles
         n = 1;
@@ -349,7 +414,7 @@ for i = [4,29]%1:size(patientIds,2)
         for n = 1:size(n_idx,2)
             ind = n_idx{n};
             point_coordinates = cell2mat(tplan(:,2)');
-            needle_x = point_coordinates(1,ind);
+                needle_x = point_coordinates(1,ind);
             needle_y = point_coordinates(2,ind);
             needle_z = point_coordinates(3,ind);
             if (needle_z(1) < needle_z(end))
@@ -361,31 +426,76 @@ for i = [4,29]%1:size(patientIds,2)
             else
                 needle_z(end) = min_z - 5;
             end
-            RGB = squeeze(ind2rgb(max(cindex(ind)),cmap));
-            plot3(needle_x,needle_y,needle_z, 'LineWidth', 2, 'Color', RGB);
+            %RGB = squeeze(ind2rgb(max(cindex(ind)),cmap));
+            RGB = [0.2,0.2,0.2];
+            plot3(needle_x,needle_y,needle_z, 'LineWidth', 1, 'Color', RGB);
         end
-        
-        ax = gca; 
-        ax.FontSize = fontsize;
-        ax.FontName = fontname;
-        xlim([-24 24])
-        ylim([-60 0])
-        zlim([-40 0])
-        axis off
+
+
+        % save figure
         chosen_figure=gcf;
         set(chosen_figure,'PaperUnits','centimeters');
-        set(chosen_figure,'PaperSize',[22 18]);
+        set(chosen_figure,'PaperSize',[14 14]);
+        %saveas(gcf,['..\BRACHYTHERAPY_data\evaluation\3d_visualization_',num2str(id),'_allTargets.pdf'])
         saveas(gcf,['..\BRACHYTHERAPY_data\evaluation\3d_visualization_',num2str(id),'_',targetName,'.pdf'])
 
+
         % save gif
-        % angleRange = -37.5:2:(360-37.5);
-        % gif(['..\BRACHYTHERAPY_data\evaluation\animation_', num2str(id),'_',targetName,'.gif'])
-        % for g = 1:length(angleRange)
-        %     % Rotate the camera view
-        %     view(angleRange(g), 30);
-        %     gif
-        % end
-    end
+        angleRange = -144.5000:2:(360-142.5000);
+        gif(['..\BRACHYTHERAPY_data\evaluation\animation_', num2str(id),'_',targetName,'.gif'])
+        %gif(['..\BRACHYTHERAPY_data\evaluation\animation_', num2str(id),'_allTargets.gif'])
+        for g = 1:length(angleRange)
+            % Rotate the camera view
+            view(angleRange(g), 30);
+            gif
+        end
+
+        % planar US view
+        img = dicomread(['..\BRACHYTHERAPY_data\',num2str(id-1000),'\IntraOp\IntraOp\MR006.dcm']);
+        info = dicominfo(['..\BRACHYTHERAPY_data\',num2str(id-1000),'\IntraOp\IntraOp\MR006.dcm']);
+        img = double(img)./255;
+
+        figure
+        %imagesc(img)
+        warp(X(:,:,slice_num),Y(:,:,slice_num),Z(:,:,slice_num),img);
+        colormap(gray)
+        hold on 
+        plotContour(contour)
+        view([0,0,1])
+        ax1 = gca;
+        axis off
+
+        ax3 = axes;
+        hold on
+        for s = 1:size(tplan,1)
+            point_coordinates = cell2mat(tplan(s,2))';
+            if (point_coordinates(3) <= info.ImagePositionPatient(3)+2.5 && point_coordinates(3) >= info.ImagePositionPatient(3)-2.5)
+                [Xcirc,Ycirc,Zcirc] = ellipsoid(point_coordinates(1),point_coordinates(2),info.ImagePositionPatient(3),allInverseGradients(s),allInverseGradients(s),0.001);
+                x_col = Xcirc-point_coordinates(1);
+                y_col = Ycirc-point_coordinates(2);
+                r = sqrt(x_col.^2 + y_col.^2)/allInverseGradients(s);
+                surf(Xcirc,Ycirc,Zcirc,r,'FaceAlpha',0.4,'EdgeColor','none');
+            end
+        end      
+
+        warp(X(:,:,slice_num),Y(:,:,slice_num),-50*ones(size(X(:,:,slice_num))),zeros(size(image)));
+        view([0,0,1])
+        ax3.Color = 'none';
+        ax3.View = ax1.View;
+        ax3.XLim = ax1.XLim;
+        ax3.YLim = ax1.YLim;
+        ax3.ZLim = ax1.ZLim;        
+        cmap = flipud(hsv);
+        cmap(1:156, :) = repmat(cmap(156,:), 156,1);
+        colormap(ax3, cmap);
+        axis off
+
+         % save figure
+        chosen_figure=gcf;
+        set(chosen_figure,'PaperUnits','centimeters');
+        set(chosen_figure,'PaperSize',[11 8.5]);
+        saveas(gcf,['..\BRACHYTHERAPY_data\evaluation\2d_visualization_',num2str(id),'_',num2str(info.ImagePositionPatient(3)),'.pdf'])
+
 end
 
 
@@ -788,7 +898,7 @@ for t = 1:length(targetNames)
     nexttile
     plotAdded(mdl, 'activity')
     title(' ')
-    xlabel('adjusted seed activity', 'FontSize', fontsize, 'FontName', fontname)
+    xlabel('adjusted reference air-kerma rate in Gy/s', 'FontSize', fontsize, 'FontName', fontname)
     ylabel('adjusted median gradient magnitude', 'FontSize', fontsize, 'FontName', fontname)
     ax = gca; 
     ax.FontSize = fontsize;
