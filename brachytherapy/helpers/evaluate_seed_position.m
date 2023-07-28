@@ -10,7 +10,7 @@ close all
 % 2. l.39f, folder for each dose parameter
 
 % 3. import seed positions corresponding to the patient number
-for patient =30% 1:36
+for patient = 1:35
     patientId = 1000+patient;
     load(['..\BRACHYTHERAPY_data\',num2str(patient),'\IntraOp\IntraOp\tplan_orig.mat']);
     numSeeds = size(tplan, 1);
